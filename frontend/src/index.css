@@ -1,1 +1,48 @@
 @import "tailwindcss";
+
+
+@custom-variant dark (&:where(.dark, .dark *));
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+/* ===== SHOPPE DARK THEME ===== */
+
+@theme {
+  --breakpoint-xxs: 300px;
+  --breakpoint-xs: 420px;   
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+
+  /* Dark theme colors (YouTube dark) */
+  --color-dark-primary: #FF0000;        /* YouTube red */
+  --color-dark-secondary: #FF0000;      /* Accent red */
+  --color-dark-accent: #FF0000;         /* For buttons/important elements */
+  --color-dark-bg: #0f0f0f;             /* Dark background */
+  --color-dark-surface: #181818;        /* Slightly lighter card surface */
+  --color-dark-text: #ffffff;           /* White text */
+  --color-dark-muted: #aaaaaa;          /* Muted gray */
+  --color-dark-border: #303030;         /* Borders for cards and menus */
+
+  /* Light theme colors (YouTube light) */
+  --color-light-primary: #FF0000;       /* YouTube red */
+  --color-light-secondary: #FF0000;     /* Accent red */
+  --color-light-accent: #FF0000;        /* For buttons/links */
+  --color-light-bg: #ffffff;            /* Pure white background */
+  --color-light-surface: #f9f9f9;       /* Slightly grayish card surface */
+  --color-light-text: #0f0f0f;          /* Dark text */
+  --color-light-muted: #606060;         /* Muted gray for less important text */
+  --color-light-border: #e5e5e5;        /* Light borders for cards */
+}
