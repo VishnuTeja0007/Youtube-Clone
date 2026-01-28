@@ -3,10 +3,10 @@ import User from "../models/userModel.js";
 
 const registerController = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
 // Validate that all required fields are present in the registration request
-    if (!name || !email || !password) {
+    if (!username || !email || !password) {
       return res.status(400).json({
         message: "All fields are required",
       });
@@ -32,7 +32,7 @@ const registerController = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
-        message: "User already exists",
+        message: "User already exists, go to login page",
       });
     }
 
@@ -41,7 +41,7 @@ const registerController = async (req, res) => {
 
 // Create a new user document in the database with the provided information
     await User.create({
-      name,
+      username,
       email,
       password: hashedPassword,
     });
