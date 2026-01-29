@@ -50,6 +50,10 @@
   }
 }
 @theme {
+  @keyframes shrinkWidth {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
   /* Breakpoints */
   --breakpoint-xxs: 300px;
   --breakpoint-xs: 420px;

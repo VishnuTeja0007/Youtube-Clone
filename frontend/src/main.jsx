@@ -7,7 +7,7 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import { AuthProvider } from './contexts/userContext.jsx'
 import HomePage from './pages/Homepage.jsx'
-
+import Videos from './pages/Videos.jsx'
 const appRouter=createBrowserRouter([
     {
         path:"/",
@@ -17,8 +17,8 @@ const appRouter=createBrowserRouter([
                 path:"/",
                 element:<HomePage/>
             },{
-            path:"/watch",
-            element:<VideoPlayer/>
+            path:"/watch/:id",
+            element:<Videos/>,
             }
         ]
     },

@@ -55,7 +55,7 @@ const VideoCard = ({ video, index }) => {
     >
       {/* Thumbnail Container - No rounded borders per your instruction */}
       <Link
-        to={`/videos/${video._id}`}
+        to={`/watch/${video._id}`}
         className="relative aspect-video w-full overflow-hidden bg-yt-surface border-b border-yt-border"
       >
         <img 
