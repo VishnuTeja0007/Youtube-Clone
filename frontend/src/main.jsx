@@ -16,9 +16,13 @@ const appRouter=createBrowserRouter([
             {
                 path:"/",
                 element:<HomePage/>
+            },{
+            path:"/watch",
+            element:<VideoPlayer/>
             }
         ]
     },
+    
     {
         path:"/login",
         element:<AuthProvider><Login/></AuthProvider>

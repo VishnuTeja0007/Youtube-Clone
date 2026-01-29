@@ -7,11 +7,16 @@ import { LogOut, Search, Sun, Moon, UserCircle } from 'lucide-react';
  * Header Component
  * Uses Tailwind v4.1 @theme variables and responsive custom breakpoints.
  */
-const Header = ({ onMenuClick }) => {
+const Header = ({ onMenuClick,searchTerm,setSearchTerm }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  function handleChange(e){
+    let query=e.target.value
+    console.log(query)
+    setSearchTerm(query)
+  }
   // Sync state with HTML class for Tailwind v4 logic
   useEffect(() => {
     const root = document.documentElement;
@@ -54,6 +59,7 @@ const Header = ({ onMenuClick }) => {
       <div className="mx-4 hidden max-w-[600px] flex-grow items-center sm:flex">
         <div className="flex w-full overflow-hidden rounded-full border border-yt-border bg-yt-bg transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
           <input
+          onChange={handleChange}
             type="text"
             placeholder="Search"
             className="w-full bg-transparent px-4 py-1 text-sm text-yt-text outline-none placeholder-yt-muted"

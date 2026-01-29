@@ -1,13 +1,12 @@
 import React from 'react';
 import { Eye, ThumbsUp, ThumbsDown, Play, MoreVertical, UserCircle } from 'lucide-react';
-
+import Toast from './Toaster';
 import { Link } from 'react-router-dom';
 const VideoGrid = ({ videos = [], className = '' }) => {
   if (!videos.length) {
     return (
-      <div className="flex h-64 w-full items-center justify-center text-yt-muted animate-fade-in">
-        <p className="font-medium">No videos found</p>
-      </div>
+      <Toast title="500 Server Issue" message="No Videos Found. Try After Sometime" onClose={()=>{console.log("close")}} />
+   
     );
   }
 
@@ -93,7 +92,7 @@ const VideoCard = ({ video, index }) => {
         
         {/* Channel/User Avatar */}
         <div className="flex-shrink-0">
-          {/* Prioritizing uploader avatar as per typical YouTube behavior */}
+          {/* Prioritizitoang uploader avatar as per typical YouTube behavior */}
           {uploader?.avatar || channel?.owner?.avatar ? (
             <img 
               src={uploader?.avatar || channel?.owner?.avatar} 

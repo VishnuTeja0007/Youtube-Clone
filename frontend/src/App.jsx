@@ -9,7 +9,7 @@ import  YouTubeSidebar  from "./components/Sidebar";
 function App() {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const [searchTerm, setSearchTerm] = useState("");
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
@@ -18,7 +18,7 @@ function App() {
     <div className="min-h-screen bg-yt-bg transition-colors duration-300">
       
       {/* 1. Header: Pass the toggle function */}
-      <Header onMenuClick={()=>{toggleSidebar(); console.log("toggled",isSidebarOpen);}} />
+      <Header onMenuClick={()=>{toggleSidebar(); console.log("toggled",isSidebarOpen);}} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
       <div className="flex pt-14">
         
@@ -34,7 +34,7 @@ function App() {
           ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}
         `}>
           <div className="mx-auto max-w-[1600px] p-4 md:p-6">
-           <Outlet/>
+           <Outlet context={{ searchTerm }}/>
           </div>
         </main>
       </div>
