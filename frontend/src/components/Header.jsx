@@ -1,92 +1,126 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/userContext';
+import { LogOut, Search, Sun, Moon, UserCircle } from 'lucide-react';
 
 /**
  * Header Component
- * Fixed SVG paths and nested button issues.
- * [Requirement 1.6, 1.7, 1.60, 1.62]
+ * Uses Tailwind v4.1 @theme variables and responsive custom breakpoints.
  */
 const Header = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Sync state with HTML class for Tailwind v4 logic
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
   return (
-    <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-4 h-14 bg-[var(--color-dark-bg)] border-b border-[var(--color-dark-border)]">
-      
+    <nav className="fixed top-0 z-50 flex h-14 w-full items-center justify-between border-b border-yt-border bg-yt-bg px-2 transition-colors duration-300 xs:px-4">
+
       {/* Left Section: Menu and Logo */}
-      <div className="flex items-center gap-4">
-        <button 
+      <div className="flex items-center gap-1 xs:gap-4">
+        <button
           onClick={onMenuClick}
-          className="p-2 hover:bg-[var(--color-dark-surface)] rounded-full text-[var(--color-dark-text)]"
+          className="rounded-full p-2 text-yt-text transition-colors hover:bg-yt-surface active:bg-yt-border/30"
         >
-          {/* FIXED: Added 'M' to start of path string */}
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        
-        <Link to="/" className="flex items-center gap-1">
-          <div className="bg-red-600 rounded-lg p-1">
-            <svg className="w-6 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+
+        <Link to="/" className="flex min-w-fit items-center gap-1">
+          <div className="rounded-lg bg-yt-primary p-1">
+            <svg className="h-3.5 w-5 text-white xs:h-4 xs:w-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
             </svg>
           </div>
-          <span className="text-[var(--color-dark-text)] font-bold tracking-tighter text-xl hidden xs:block">
-            YouTube<sup className="text-[10px] text-[var(--color-dark-muted)] ml-1 font-normal">IN</sup>
+          <span className="hidden font-bold tracking-tighter text-yt-text text-lg xs:block xs:text-xl">
+            YouTube<sup className="ml-0.5 font-normal text-yt-muted text-[10px] uppercase">In</sup>
           </span>
         </Link>
       </div>
 
-      {/* Center Section: Search Bar [Requirement 1.67, 1.68] */}
-      <div className="flex-grow max-w-[600px] mx-4 flex items-center">
-        <div className="flex w-full bg-[var(--color-dark-bg)] border border-[var(--color-dark-border)] rounded-full overflow-hidden">
+      {/* Center Section: Search Bar (Responsive) */}
+      <div className="mx-4 hidden max-w-[600px] flex-grow items-center sm:flex">
+        <div className="flex w-full overflow-hidden rounded-full border border-yt-border bg-yt-bg transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
           <input
             type="text"
             placeholder="Search"
-            className="w-full bg-transparent px-4 py-1 text-[var(--color-dark-text)] focus:outline-none placeholder-[var(--color-dark-muted)]"
+            className="w-full bg-transparent px-4 py-1 text-sm text-yt-text outline-none placeholder-yt-muted"
           />
-          <button className="bg-[var(--color-dark-surface)] px-5 py-1 border-l border-[var(--color-dark-border)] hover:bg-[#303030]">
-            <svg className="w-5 h-5 text-[var(--color-dark-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+          <button className="border-l border-yt-border bg-yt-surface px-5 py-1 hover:bg-yt-border/50 transition-colors">
+            <Search className="h-5 w-5 text-yt-text" />
           </button>
         </div>
       </div>
 
-      {/* Right Section: Auth [Requirement 1.60, 1.62] */}
-      <div className="flex items-center gap-3">
+      {/* Right Section: Actions & Theme Toggle */}
+      <div className="flex items-center gap-1 xs:gap-2">
+        
+        {/* Theme Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          className="active:scale-90 rounded-full p-2 text-yt-text transition-all duration-300 hover:bg-yt-surface"
+          title={isDarkMode ? "Light Mode" : "Dark Mode"}
+        >
+          {isDarkMode ? (
+            <Sun size={20} className="fill-yellow-500/10 text-yellow-500" />
+          ) : (
+            <Moon size={20} className="fill-slate-700/10 text-slate-700" />
+          )}
+        </button>
+
+        {/* Mobile-only Search Button */}
+        <button className="p-2 text-yt-text hover:bg-yt-surface rounded-full sm:hidden">
+          <Search size={20} />
+        </button>
+
         {!user ? (
-          /* FIXED: Removed nested button. Only one button handles the login navigation. */
-          <button 
+          <button
             onClick={() => navigate('/login')}
-            className="flex items-center gap-2 px-3 py-1.5 border border-[var(--color-dark-border)] rounded-full text-[var(--color-dark-accent)] hover:bg-blue-400/10 transition-colors"
+            className="flex items-center gap-1.5 rounded-full border border-yt-border px-2 py-1.5 text-yt-primary transition-colors hover:bg-yt-primary/10 xs:px-3 active:scale-95"
           >
-            <div className="border border-[var(--color-dark-accent)] rounded-full p-0.5">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-              </svg>
-            </div>
-            <span className="text-sm font-medium">Sign in</span>
+            <span className="text-xs font-medium xs:text-sm">Sign in</span>
           </button>
         ) : (
-          /* FIXED: Using a div here to avoid nested buttons */
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-[var(--color-dark-text)] text-sm font-medium hidden md:block">
-                {user.username}
-              </span>
-              <img 
-                src={user.avatar || 'https://via.placeholder.com/32'} 
-                alt="Profile" 
-                className="w-8 h-8 rounded-full border border-[var(--color-dark-border)]"
+          <div className="flex items-center gap-1 xs:gap-3">
+            
+            {/* Channel Link */}
+            <Link 
+              to={`/channel/${user.id || 'me'}`}
+              className="flex items-center gap-2 rounded-full p-2 text-yt-text transition-colors hover:bg-yt-surface md:px-3 group"
+              title="Your Channel"
+            >
+              <UserCircle size={20} strokeWidth={1.5} className="group-hover:text-yt-primary transition-colors" />
+              <span className="hidden text-xs font-semibold md:block">Channel</span>
+            </Link>
+
+            {/* Profile Avatar */}
+            <div className="flex items-center">
+              <img
+                src={user.avatar || 'https://via.placeholder.com/32'}
+                alt="Profile"
+                className="h-7 w-7 rounded-full border border-yt-border object-cover xs:h-8 xs:w-8 hover:opacity-90 cursor-pointer"
               />
             </div>
-            <button 
+            
+            {/* Logout Button */}
+            <button
               onClick={logout}
-              className="text-xs text-[var(--color-dark-muted)] hover:text-[var(--color-dark-primary)] underline transition-colors"
+              className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-yt-muted transition-all hover:text-yt-primary hover:bg-yt-primary/5 text-[10px] xs:text-xs"
             >
-              Logout
+              <LogOut size={14} className="transition-transform group-hover:-translate-x-0.5" />
+              <span className="hidden xs:block font-medium">Logout</span>
             </button>
           </div>
         )}

@@ -6,11 +6,18 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import { AuthProvider } from './contexts/userContext.jsx'
+import HomePage from './pages/Homepage.jsx'
 
 const appRouter=createBrowserRouter([
     {
         path:"/",
-        element:<App/>
+        element:<App/>,
+        children:[
+            {
+                path:"/",
+                element:<HomePage/>
+            }
+        ]
     },
     {
         path:"/login",

@@ -1,48 +1,87 @@
 @import "tailwindcss";
 
-
-@custom-variant dark (&:where(.dark, .dark *));
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-slide-up {
-  animation: slideUp 0.6s ease-out forwards;
-}
-/* ===== SHOPPE DARK THEME ===== */
-
 @theme {
+  /* ... previous color/breakpoint definitions ... */
+
+  /* Custom Animations */
+  --animate-slide-in: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  --animate-live-pulse: livePulse 2s ease-in-out infinite;
+  --animate-fade-in: fadeIn 0.3s ease-out;
+  --animate-slide-up: slideUp 0.6s ease-out forwards;
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.65; transform: scale(0.92); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+/* Base Styles & Custom Utilities */
+@layer base {
+  /* Use theme variables for the scrollbar so it reacts to dark mode */
+  .scrollbar-yt::-webkit-scrollbar {
+    width: 8px;
+  }
+  .scrollbar-yt::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-yt::-webkit-scrollbar-thumb {
+    background: var(--yt-border);
+    border-radius: 10px;
+  }
+  .scrollbar-yt::-webkit-scrollbar-thumb:hover {
+    background: var(--yt-muted);
+  }
+
+  /* Ensure smooth color transitions for the whole app */
+  html, body {
+    @apply transition-colors duration-300;
+  }
+}
+@theme {
+  /* Breakpoints */
   --breakpoint-xxs: 300px;
-  --breakpoint-xs: 420px;   
+  --breakpoint-xs: 420px;
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
 
-  /* Dark theme colors (YouTube dark) */
-  --color-dark-primary: #FF0000;        /* YouTube red */
-  --color-dark-secondary: #FF0000;      /* Accent red */
-  --color-dark-accent: #FF0000;         /* For buttons/important elements */
-  --color-dark-bg: #0f0f0f;             /* Dark background */
-  --color-dark-surface: #181818;        /* Slightly lighter card surface */
-  --color-dark-text: #ffffff;           /* White text */
-  --color-dark-muted: #aaaaaa;          /* Muted gray */
-  --color-dark-border: #303030;         /* Borders for cards and menus */
+  /* Semantic Colors - These generate classes like bg-yt-bg, text-yt-primary, etc. */
+  --color-yt-primary: var(--yt-primary);
+  --color-yt-bg: var(--yt-bg);
+  --color-yt-surface: var(--yt-surface);
+  --color-yt-text: var(--yt-text);
+  --color-yt-muted: var(--yt-muted);
+  --color-yt-border: var(--yt-border);
+}
 
-  /* Light theme colors (YouTube light) */
-  --color-light-primary: #FF0000;       /* YouTube red */
-  --color-light-secondary: #FF0000;     /* Accent red */
-  --color-light-accent: #FF0000;        /* For buttons/links */
-  --color-light-bg: #ffffff;            /* Pure white background */
-  --color-light-surface: #f9f9f9;       /* Slightly grayish card surface */
-  --color-light-text: #0f0f0f;          /* Dark text */
-  --color-light-muted: #606060;         /* Muted gray for less important text */
-  --color-light-border: #e5e5e5;        /* Light borders for cards */
+/* Light theme colors (Source of Truth) */
+:root {
+  --yt-primary: #FF0000;
+  --yt-bg: #ffffff;
+  --yt-surface: #f9f9f9;
+  --yt-text: #0f0f0f;
+  --yt-muted: #606060;
+  --yt-border: #e5e5e5;
+}
+
+/* Dark theme colors (Swapped when .dark class is present) */
+.dark {
+  --yt-bg: #0f0f0f;
+  --yt-surface: #181818;
+  --yt-text: #ffffff;
+  --yt-muted: #aaaaaa;
+  --yt-border: #303030;
 }
