@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ListFilter, MoreVertical, Pencil, Check, X, UserCircle } from 'lucide-react';
+import { ListFilter, Pencil, Check, X } from 'lucide-react';
 import axios from 'axios';
 
 const CommentSection = ({ videoId, currentUser }) => {
@@ -7,8 +7,16 @@ const CommentSection = ({ videoId, currentUser }) => {
   const [newComment, setNewComment] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
+  
+  // Debug logs
+  console.log("currentUser:", currentUser);
+  console.log("currentUser type:", typeof currentUser);
+  
+  // Helper for Auth Headers
+  const getAuthHeader = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
 
-  // Fetch comments for this video
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -21,16 +29,19 @@ const CommentSection = ({ videoId, currentUser }) => {
     fetchComments();
   }, [videoId]);
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    const commentObj = {
-      _id: Date.now().toString(), // Simulation
-      text: newComment,
-      user: currentUser,
-      createdAt: new Date().toISOString()
-    };
-    setComments([commentObj, ...comments]);
-    setNewComment("");
+    try {
+      const res = await axios.post(
+        `http://localhost:3000/api/comments`, 
+        { text: newComment, videoId: videoId },
+        getAuthHeader()
+      );
+      setComments([res.data, ...comments]);
+      setNewComment("");
+    } catch (err) {
+      console.error("Error posting comment:", err);
+    }
   };
 
   const startEdit = (comment) => {
@@ -38,37 +49,70 @@ const CommentSection = ({ videoId, currentUser }) => {
     setEditText(comment.text);
   };
 
-  const saveEdit = (id) => {
-    setComments(comments.map(c => c._id === id ? { ...c, text: editText } : c));
-    setEditingId(null);
+  const saveEdit = async (id) => {
+    if (!editText.trim()) return;
+
+    // This configuration matches the successful manual test you shared
+    const options = {
+      method: 'patch',
+      url: `http://localhost:3000/api/comments/${id}`,
+      headers: {
+        'Accept': '*/*',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      data: { text: editText }
+    };
+
+    try {
+      // Using axios.request for maximum compatibility with your backend
+      const response = await axios.request(options);
+
+      // Update local state with the returned updated comment object
+      setComments(prevComments => 
+        prevComments.map(c => (c._id === id ? response.data : c))
+      );
+      
+      // Close the edit input
+      setEditingId(null);
+      console.log("Comment updated successfully!");
+    } catch (err) {
+      console.error("Failed to update comment:", err.response?.data || err.message);
+      // Optional: alert the user if the request failed (e.g., unauthorized)
+    }
   };
 
   return (
-    <div className="mt-6 border-t border-yt-border pt-6 max-w-4xl">
+    <div className="mt-6 border-t border-yt-border pt-6 max-w-4xl bg-yt-bg text-yt-text transition-colors">
       {/* Header */}
       <div className="flex items-center gap-8 mb-6">
         <h2 className="text-xl font-bold">{comments.length} Comments</h2>
-        <button className="text-sm font-medium text-yt-text flex items-center gap-2">
+        <button className="text-sm font-medium text-yt-text flex items-center gap-2 hover:bg-yt-surface px-3 py-1 rounded-full transition-colors">
           <ListFilter size={20} /> Sort by
         </button>
       </div>
 
-      {/* Input Section */}
+      {/* Input Area */}
       <div className="flex gap-4 mb-8">
-        <img src={currentUser?.avatar} className="h-10 w-10 rounded-full border border-yt-border" alt="" />
+        <img src={currentUser?.avatar} className="h-10 w-10 rounded-full border border-yt-border object-cover" alt="User" />
         <div className="flex-1 group">
           <input
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
-            className="w-full bg-transparent border-b border-yt-border py-1 focus:border-yt-text outline-none transition-colors text-sm"
+            className="w-full bg-transparent border-b border-yt-border py-1 focus:border-yt-text outline-none transition-colors text-sm text-yt-text placeholder:text-yt-muted"
           />
           <div className="flex justify-end gap-3 mt-2 opacity-0 group-focus-within:opacity-100 transition-opacity">
-            <button onClick={() => setNewComment("")} className="px-4 py-2 text-sm font-bold hover:bg-yt-surface rounded-full">Cancel</button>
+            <button 
+              onClick={() => setNewComment("")} 
+              className="px-4 py-2 text-sm font-bold text-yt-text hover:bg-yt-surface rounded-full transition-colors"
+            >
+              Cancel
+            </button>
             <button 
               onClick={handleAddComment}
-              disabled={!newComment}
-              className="px-4 py-2 text-sm font-bold bg-yt-primary text-white rounded-full disabled:bg-yt-surface disabled:text-yt-muted"
+              disabled={!newComment.trim()}
+              className="px-4 py-2 text-sm font-bold bg-yt-primary text-white rounded-full disabled:bg-yt-surface disabled:text-yt-muted transition-colors"
             >
               Comment
             </button>
@@ -80,48 +124,50 @@ const CommentSection = ({ videoId, currentUser }) => {
       <div className="space-y-6">
         {comments.map((comment) => (
           <div key={comment._id} className="flex gap-4 group">
-            <img src={comment.user?.avatar} className="h-10 w-10 rounded-full object-cover" alt="" />
+            <img src={comment.user?.avatar} className="h-10 w-10 rounded-full object-cover bg-yt-surface" alt="" />
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold">@{comment.user?.username || "user"}</span>
-                <span className="text-xs text-yt-muted">1 day ago</span>
+                <span className="text-xs font-bold text-yt-text">@{comment.user?.username || "user"}</span>
+                <span className="text-xs text-yt-muted">
+                  {new Date(comment.createdAt).toLocaleDateString()}
+                </span>
               </div>
 
               {editingId === comment._id ? (
-                /* EDIT MODE: To-do list style with Tick and X */
                 <div className="flex items-center gap-2 bg-yt-surface p-2 rounded-md border border-yt-primary/30">
                   <input 
                     autoFocus
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="flex-1 bg-transparent outline-none text-sm"
+                    className="flex-1 bg-transparent outline-none text-sm text-yt-text"
+                    onKeyDown={(e) => e.key === 'Enter' && saveEdit(comment._id)}
                   />
-                  <button onClick={() => saveEdit(comment._id)} className="text-green-500 hover:bg-green-500/10 p-1 rounded">
+                  <button onClick={() => saveEdit(comment._id)} className="text-green-500 hover:bg-green-500/10 p-1 rounded transition-colors">
                     <Check size={18} />
                   </button>
-                  <button onClick={() => setEditingId(null)} className="text-yt-primary hover:bg-yt-primary/10 p-1 rounded">
+                  <button onClick={() => setEditingId(null)} className="text-yt-primary hover:bg-yt-primary/10 p-1 rounded transition-colors">
                     <X size={18} />
                   </button>
                 </div>
               ) : (
-                /* VIEW MODE */
                 <div className="relative pr-10">
                   <p className="text-sm leading-relaxed text-yt-text">{comment.text}</p>
-                  
-                  {/* Edit Pencil - Visible on hover if it's the current user's comment */}
-                  <button 
-                    onClick={() => startEdit(comment)}
-                    className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-yt-muted hover:text-yt-text"
-                  >
-                    <Pencil size={14} />
-                  </button>
+                  {console.log("Current user ID:", currentUser?.id, "Comment user ID:", comment.user?._id)}
+                  {console.log(currentUser?.id === comment.user?._id )}
+                  {(currentUser?.id === comment.user?._id ) && (
+                    <button 
+                      onClick={() => startEdit(comment)}
+                      className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-yt-muted hover:text-yt-text hover:bg-yt-surface rounded-full"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* Interaction simulation */}
               <div className="flex items-center gap-4 mt-2 text-xs text-yt-muted font-bold">
-                <button className="hover:text-yt-text">Reply</button>
+                <button className="hover:text-yt-text transition-colors">Reply</button>
               </div>
             </div>
           </div>

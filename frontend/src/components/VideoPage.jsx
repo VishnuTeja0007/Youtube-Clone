@@ -6,8 +6,10 @@ import {
   MoreHorizontal, UserCircle, ListFilter 
 } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
-
+import { useAuth } from '../contexts/userContext';
+import CommentSection from './CommentSection';
 const VideoPage = () => {
+  const {user}=useAuth()
   const { id } = useParams();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -126,15 +128,7 @@ const VideoPage = () => {
       </div>
 
       {/* 5. Comments Section Header */}
-      <div className="mt-6 border-t border-yt-border pt-6">
-        <h2 className="text-xl font-bold flex items-center gap-6">
-          Comments
-          <span className="text-sm font-medium text-yt-muted cursor-pointer flex items-center gap-2 hover:text-yt-text transition-colors">
-            <ListFilter size={20} />
-            Sort by
-          </span>
-        </h2>
-      </div>
+      <CommentSection currentUser={user} videoId={video._id} />
     </div>
   );
 };

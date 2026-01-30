@@ -1,10 +1,11 @@
-import React from 'react'
 import VideoPage from '../components/VideoPage'
+import VideoSideBar from '../components/VideoSideBar'
 
 const Videos = () => {
   return (
-    <div>
+    <div className='flex flex-row justify-between items-start'>
       <VideoPage/>
+      <VideoSideBar/>
     </div>
   )
 }

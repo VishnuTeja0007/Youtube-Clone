@@ -2,42 +2,46 @@ import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import VideoGrid from '../components/VideoGrid';
 import { useOutletContext } from 'react-router-dom';
+import { useCookies } from 'react-cookie'
 const HomePage = () => {
-  const { searchTerm } = useOutletContext()
-console.log(searchTerm)
+  const { searchTerm = "" } = useOutletContext();
   const [videos, setVideos] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
 
-
-  // 5 Tabs as requested
   const categories = ["All", "Education", "Travel", "Vlog", "LIVE"];
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
+      const CACHE_KEY = 'yt_videos_cache';
+      const cachedData = localStorage.getItem(CACHE_KEY);
+
+      if (cachedData) {
+        setVideos(JSON.parse(cachedData));
+        // Optional: Trigger a background fetch to update the cache silently
+      }
+
       try {
-        const response = await axios.get('http://localhost:3000/api/videos');
-        setVideos(response.data);
+        const { data } = await axios.get('http://localhost:3000/api/videos');
+        setVideos(data);
+        // Save to localStorage (must stringify objects)
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
       } catch (error) {
         console.error("Fetch error:", error);
       }
-    }
+    };
+
     fetchData();
   }, []);
 
-const filteredVideos = useMemo(() => {
-  return videos.filter((video) => {
-    const matchesCategory =
-      activeCategory === "All" ||
-      video.category.toUpperCase() === activeCategory.toUpperCase();
-
-    const matchesQuery =
-      !searchTerm ||
-      video.title.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesCategory && matchesQuery;
-  });
-}, [videos, activeCategory, searchTerm]);
-
+  const filteredVideos = useMemo(() => {
+    const lowerSearch = searchTerm.toLowerCase();
+    return videos.filter((video) => {
+      const matchesCategory = activeCategory === "All" || 
+                              video.category.toUpperCase() === activeCategory.toUpperCase();
+      const matchesQuery = video.title.toLowerCase().includes(lowerSearch);
+      return matchesCategory && matchesQuery;
+    });
+  }, [videos, activeCategory, searchTerm]);
   return (
     <div className="min-h-screen bg-yt-bg transition-colors duration-300">
       
