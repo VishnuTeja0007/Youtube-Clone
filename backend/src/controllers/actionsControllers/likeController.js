@@ -1,51 +1,32 @@
-import userModel from "../../models/userModel";
-
 async function toggleLikeController(req, res) {
     try {
         const { videoId } = req.body;
-        const { id } = req.user; // Assuming id comes from auth middleware
+        const { id } = req.user;
 
-        // 1. Fetch the user to check existing likes
         const user = await userModel.findById(id);
+        if (!user) return res.status(404).json({ message: "User not found" });
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // 2. Check if the video is already liked
-        // We use .some() for a boolean check (true/false)
-        const isAlreadyLiked = user.likedVideos.some(video => video.id === videoId);
-
+        const isAlreadyLiked = user.likedVideos.includes(videoId);
         let update;
-        let statusMessage;
 
         if (isAlreadyLiked) {
-            // Check version: If it exists, we REMOVE it (Toggle Off)
-            update = { $pull: { likedVideos: { id: videoId } } };
-            statusMessage = "Video unliked";
+            // Simply remove the like
+            update = { $pull: { likedVideos: videoId } };
         } else {
-            // Check version: If it doesn't exist, we ADD it (Toggle On)
-            update = { $addToSet: { likedVideos: { id: videoId } } };
-            statusMessage = "Video liked";
+            // Add to liked AND ensure it's removed from disliked
+            update = { 
+                $addToSet: { likedVideos: videoId },
+                $pull: { dislikedVideos: videoId } 
+            };
         }
 
-        // 3. Apply the update
-        const updatedUser = await userModel.findByIdAndUpdate(
-            id, 
-            update, 
-            { new: true }
-        );
-
+        const updatedUser = await userModel.findByIdAndUpdate(id, update, { new: true });
         res.status(200).json({ 
-            message: statusMessage, 
-            liked: !isAlreadyLiked,
+            message: isAlreadyLiked ? "Like removed" : "Video liked", 
             user: updatedUser 
         });
-
     } catch (error) {
-        console.error("Like Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Error updating like", error: error.message });
     }
 }
-
-export default toggleLikeController;
+export default toggleLikeController

@@ -4,6 +4,7 @@ import videoRoutes from "./routes/videoRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import channelRoutes from "./routes/channelRoutes.js";
 import cors from "cors";
+import actionRoutes from "./routes/miscellenousRoutes.js";
 // Register all API routes for different endpoints of the application
 const app = express();
 app.use(cors({
@@ -17,6 +18,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/videos", videoRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/channels", channelRoutes);
+app.use("/api/actions",actionRoutes)
 app.get("/", (req, res) => {
   res.send("API is running...");
 });

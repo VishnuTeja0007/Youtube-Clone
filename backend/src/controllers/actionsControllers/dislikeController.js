@@ -1,51 +1,32 @@
-import userModel from "../../models/userModel";
-
 async function toggleDislikeController(req, res) {
     try {
         const { videoId } = req.body;
-        const { id } = req.user; // Assuming id comes from auth middleware
+        const { id } = req.user;
 
-        // 1. Fetch the user to check existing likes
         const user = await userModel.findById(id);
+        if (!user) return res.status(404).json({ message: "User not found" });
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // 2. Check if the video is already liked
-        // We use .some() for a boolean check (true/false)
-        const isAlreadyLiked = user.dislikedVideos.some(video => video.id === videoId);
-
+        const isAlreadyDisliked = user.dislikedVideos.includes(videoId);
         let update;
-        let statusMessage;
 
-        if (isAlreadyLiked) {
-            // Check version: If it exists, we REMOVE it (Toggle Off)
-            update = { $pull: { dislikedVideos: { id: videoId } } };
-            statusMessage = "Video unliked";
+        if (isAlreadyDisliked) {
+            // Simply remove the dislike
+            update = { $pull: { dislikedVideos: videoId } };
         } else {
-            // Check version: If it doesn't exist, we ADD it (Toggle On)
-            update = { $addToSet: { dislikedVideos: { id: videoId } } };
-            statusMessage = "Video liked";
+            // Add to disliked AND ensure it's removed from liked
+            update = { 
+                $addToSet: { dislikedVideos: videoId },
+                $pull: { likedVideos: videoId } 
+            };
         }
 
-        // 3. Apply the update
-        const updatedUser = await userModel.findByIdAndUpdate(
-            id, 
-            update, 
-            { new: true }
-        );
-
+        const updatedUser = await userModel.findByIdAndUpdate(id, update, { new: true });
         res.status(200).json({ 
-            message: statusMessage, 
-            liked: !isAlreadyLiked,
+            message: isAlreadyDisliked ? "Dislike removed" : "Video disliked", 
             user: updatedUser 
         });
-
     } catch (error) {
-        console.error("Like Error:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Error updating dislike", error: error.message });
     }
 }
-
-export default toggleDislikeController;
+export default toggleDislikeController

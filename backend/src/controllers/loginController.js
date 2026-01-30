@@ -44,6 +44,11 @@ const loginController = async (req, res) => {
         username: user.username,
         email: user.email,
         avatar: user.avatar,
+        likedVideos:user.likedVideos,
+        dislikedVideos:user.dislikedVideos,
+        watchHistory:user.watchHistory,
+        channel:user.channel,
+        subscribedChannels:user.subscribedChannels
       },
     });
   } catch (error) {

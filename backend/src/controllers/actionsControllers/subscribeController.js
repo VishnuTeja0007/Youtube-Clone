@@ -1,11 +1,17 @@
-import userModel from "../../models/userModel";
+import userModel from "../../models/userModel.js";
 
 async function toggleSubscibeController(req, res) {
     try {
         const { channelId } = req.body;
-        const { id } = req.user; // Assuming id comes from auth middleware
+        const { id } = req.user; // Authenticated user's ID
 
-        // 1. Fetch the user to check existing likes
+        // 1. Check if the user is trying to subscribe to themselves
+        if (id === channelId) {
+            return res.status(400).json({ 
+                message: "You cannot subscribe to your own channel." 
+            });
+        }
+
         const user = await userModel.findById(id);
 
         if (!user) {
@@ -13,19 +19,16 @@ async function toggleSubscibeController(req, res) {
         }
 
         // 2. Check if the channel is already subscribed
-        // We use .some() for a boolean check (true/false)
-        const isAlreadysubscribed = user.subscribedChannels.some(video => video.id === channelId);
+        const isAlreadySubscribed = user.subscribedChannels.includes(channelId);
 
         let update;
         let statusMessage;
 
-        if (isAlreadysubscribed) {
-            // Check version: If it exists, we REMOVE it (Toggle Off)
-            update = { $pull: { subscribedChannels: { id: channelId } } };
-            statusMessage = "Channel removed Subscription";
+        if (isAlreadySubscribed) {
+            update = { $pull: { subscribedChannels: channelId } };
+            statusMessage = "Channel removed from Subscription";
         } else {
-            // Check version: If it doesn't exist, we ADD it (Toggle On)
-            update = { $addToSet: { subscribedChannels: { id: channelId } } };
+            update = { $addToSet: { subscribedChannels: channelId } };
             statusMessage = "Channel is subscribed";
         }
 
@@ -38,12 +41,12 @@ async function toggleSubscibeController(req, res) {
 
         res.status(200).json({ 
             message: statusMessage, 
-            subscribed: !isAlreadysubscribed,
+            subscribed: !isAlreadySubscribed,
             user: updatedUser 
         });
 
     } catch (error) {
-        console.error("Like Error:", error);
+        console.error("Subscribe Error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 }
