@@ -50,3 +50,61 @@ export const handleCommentEdits = async (req, res) => {
     res.status(500).json({ message: "Error updating comment", error: error.message });
   }
 };
+
+/**
+ * @desc Add a new comment
+ * @route POST /api/comments
+ */
+export const addComment = async (req, res) => {
+  try {
+    const { text, videoId } = req.body;
+    const userId = req.user.id;
+
+    if (!text || !videoId) {
+      return res.status(400).json({ message: "Text and Video ID are required" });
+    }
+
+    const newComment = new Comment({
+      text,
+      video: videoId,
+      user: userId,
+    });
+
+    const savedComment = await newComment.save();
+    
+    // Populate user to return full object immediately
+    await savedComment.populate("user", "username avatar");
+
+    res.status(201).json(savedComment);
+  } catch (error) {
+    res.status(500).json({ message: "Error adding comment", error: error.message });
+  }
+};
+
+/**
+ * @desc Delete a comment
+ * @route DELETE /api/comments/:id
+ */
+export const deleteComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const comment = await Comment.findById(id);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    // Check ownership
+    if (comment.user.toString() !== userId) {
+      return res.status(403).json({ message: "You can only delete your own comments" });
+    }
+
+    await Comment.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Comment deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting comment", error: error.message });
+  }
+};

@@ -47,6 +47,12 @@ const userSchema = new mongoose.Schema(
         ref: "Video",
       },
     ],
+    dislikedVideos: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
 
     //watch later
      watchLater: [

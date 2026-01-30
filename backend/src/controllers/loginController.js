@@ -33,7 +33,7 @@ const loginController = async (req, res) => {
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "60m" }
     );
     // Generate a JWT token for the authenticated user session with 15 minute expiration
     res.status(200).json({

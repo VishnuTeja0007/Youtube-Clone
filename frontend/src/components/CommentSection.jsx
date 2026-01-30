@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ListFilter, Pencil, Check, X } from 'lucide-react';
+import { ListFilter, Pencil, Check, X, Trash2 } from 'lucide-react';
 import axios from 'axios';
 
 const CommentSection = ({ videoId, currentUser }) => {
@@ -52,21 +52,12 @@ const CommentSection = ({ videoId, currentUser }) => {
   const saveEdit = async (id) => {
     if (!editText.trim()) return;
 
-    // This configuration matches the successful manual test you shared
-    const options = {
-      method: 'patch',
-      url: `http://localhost:3000/api/comments/${id}`,
-      headers: {
-        'Accept': '*/*',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      data: { text: editText }
-    };
-
     try {
-      // Using axios.request for maximum compatibility with your backend
-      const response = await axios.request(options);
+      const response = await axios.patch(
+        `http://localhost:3000/api/comments/${id}`,
+        { text: editText },
+        getAuthHeader()
+      );
 
       // Update local state with the returned updated comment object
       setComments(prevComments => 
@@ -78,7 +69,17 @@ const CommentSection = ({ videoId, currentUser }) => {
       console.log("Comment updated successfully!");
     } catch (err) {
       console.error("Failed to update comment:", err.response?.data || err.message);
-      // Optional: alert the user if the request failed (e.g., unauthorized)
+    }
+  };
+
+  const handleDeleteComment = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+    
+    try {
+      await axios.delete(`http://localhost:3000/api/comments/${id}`, getAuthHeader());
+      setComments(comments.filter(c => c._id !== id));
+    } catch (err) {
+      console.error("Failed to delete comment:", err);
     }
   };
 
@@ -156,12 +157,22 @@ const CommentSection = ({ videoId, currentUser }) => {
                   {console.log("Current user ID:", currentUser?.id, "Comment user ID:", comment.user?._id)}
                   {console.log(currentUser?.id === comment.user?._id )}
                   {(currentUser?.id === comment.user?._id ) && (
-                    <button 
-                      onClick={() => startEdit(comment)}
-                      className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity text-yt-muted hover:text-yt-text hover:bg-yt-surface rounded-full"
-                    >
-                      <Pencil size={14} />
-                    </button>
+                    <div className="absolute top-0 right-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => startEdit(comment)}
+                        className="p-2 text-yt-muted hover:text-yt-text hover:bg-yt-surface rounded-full transition-colors"
+                        title="Edit"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteComment(comment._id)}
+                        className="p-2 text-yt-muted hover:text-red-500 hover:bg-yt-surface rounded-full transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

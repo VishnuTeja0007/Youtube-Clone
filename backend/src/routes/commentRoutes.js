@@ -1,16 +1,20 @@
 // routes/commentRoutes.js
 import express from "express";
-import { getAllComments, handleCommentEdits } from "../controllers/commentController.js";
+import { getAllComments, handleCommentEdits, addComment, deleteComment } from "../controllers/commentController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const commentRouter = express.Router();
 
-// Get comments for a specific video (e.g., /api/comments/6979f9...)
+// Get comments for a specific video
 commentRouter.get("/:videoId", getAllComments);
 
-// Patch a specific comment by its own ID
-// commentRouter.patch("/:id",authMiddleware, handleCommentEdits);
+// Add a new comment
+commentRouter.post("/", authMiddleware, addComment);
 
-commentRouter.patch("/:id", handleCommentEdits);
+// Patch a specific comment by its own ID
+commentRouter.patch("/:id", authMiddleware, handleCommentEdits);
+
+// Delete a comment
+commentRouter.delete("/:id", authMiddleware, deleteComment);
 
 export default commentRouter;
