@@ -1,5 +1,5 @@
 import express from "express";
-import { createChannel, getAllChannels, getChannelById } from "../controllers/channelController.js";
+import { createChannel, getAllChannels, getChannelById, deleteChannel } from "../controllers/channelController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { requestLogger } from "../middlewares/Logger.js";
 
@@ -11,5 +11,6 @@ channelRouter.get("/:id", requestLogger, getChannelById);
 
 // Protected routes
 channelRouter.post("/", authMiddleware, createChannel);
+channelRouter.delete("/:id", authMiddleware, deleteChannel);
 
 export default channelRouter;

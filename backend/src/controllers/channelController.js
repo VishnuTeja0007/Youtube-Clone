@@ -7,11 +7,15 @@ import Video from "../models/videoModel.js";
  */
 export const createChannel = async (req, res) => {
   try {
-    const { channelName, description, channelBanner } = req.body;
+    const { channelName, description, channelBanner, uniqueDeleteKey } = req.body;
     const userId = req.user.id;
 
     if (!channelName) {
       return res.status(400).json({ message: "Channel name is required" });
+    }
+
+    if (!uniqueDeleteKey) {
+      return res.status(400).json({ message: "Unique delete key is required" });
     }
 
     const existingChannel = await Channel.findOne({ owner: userId });
@@ -23,6 +27,7 @@ export const createChannel = async (req, res) => {
       channelName,
       description,
       channelBanner,
+      uniqueDeleteKey,
       owner: userId,
     });
 
@@ -81,5 +86,38 @@ export const getChannelById = async (req, res) => {
       message: "Error fetching channel details", 
       error: error.message 
     });
+  }
+};
+
+/**
+ * @desc Delete channel
+ * @route DELETE /api/channels/:id
+ */
+export const deleteChannel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { uniqueDeleteKey } = req.body;
+    const userId = req.user.id;
+
+    const channel = await Channel.findById(id);
+
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    if (channel.owner.toString() !== userId) {
+      return res.status(403).json({ message: "You are not authorized to delete this channel" });
+    }
+
+    if (!uniqueDeleteKey || channel.uniqueDeleteKey !== uniqueDeleteKey) {
+      return res.status(403).json({ message: "Invalid delete key verification" });
+    }
+
+    await Video.deleteMany({ channel: id });
+    await Channel.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Channel deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting channel", error: error.message });
   }
 };

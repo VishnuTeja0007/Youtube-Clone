@@ -11,6 +11,8 @@ import Videos from './pages/Videos.jsx'
 import Channel from './components/Channel.jsx'
 import ChannelProfile from './components/Channel.jsx'
 import ChannelList from './components/ChannelList.jsx'
+import CreateVideo from './components/videoForms/UploadVideo.jsx'
+import UpdateVideo from './components/videoForms/UpdateVideo.jsx'
 const appRouter = createBrowserRouter([
     {
         path: "/",
@@ -37,8 +39,23 @@ const appRouter = createBrowserRouter([
                         element:<ChannelProfile/>
                     }
                 ]
-            }
+            },
+            {
+                path: "/studio",
+                children: [
+                    {
+                        path: "CreateVideo",
+                        element: <CreateVideo/>
+                    },
+                    {
+                        path: "updateVideo",
+                        element: <UpdateVideo />
+                    }
+                    
+                ]
+            },
         ]
+
     },
 
     {

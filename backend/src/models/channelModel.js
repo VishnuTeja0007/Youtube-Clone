@@ -18,6 +18,11 @@ const channelSchema = new mongoose.Schema(
       default: "",
     },
 
+    uniqueDeleteKey:{
+      type:String,
+      required:true,
+    },
+    
     subscribers: {
       type: Number,
       default: 0,
