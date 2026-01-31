@@ -8,11 +8,12 @@ import Register from './pages/Register.jsx'
 import { AuthProvider } from './contexts/userContext.jsx'
 import HomePage from './pages/Homepage.jsx'
 import Videos from './pages/Videos.jsx'
-import Channel from './components/Channel.jsx'
 import ChannelProfile from './components/Channel.jsx'
 import ChannelList from './components/ChannelList.jsx'
 import CreateVideo from './components/videoForms/UploadVideo.jsx'
 import UpdateVideo from './components/videoForms/UpdateVideo.jsx'
+import CreateChannel from './components/channelForms/CreateChannel.jsx'
+import UpdateChannel from './components/channelForms/UpdateChannel.jsx'
 const appRouter = createBrowserRouter([
     {
         path: "/",
@@ -50,6 +51,13 @@ const appRouter = createBrowserRouter([
                     {
                         path: "updateVideo",
                         element: <UpdateVideo />
+                    },{
+                        path:"updateChannel",
+                        element:<UpdateChannel/>
+                    }
+                    ,{
+                        path:"createChannel",
+                        element:<CreateChannel/>
                     }
                     
                 ]

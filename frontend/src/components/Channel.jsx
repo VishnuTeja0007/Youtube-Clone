@@ -3,9 +3,12 @@ import axios from 'axios';
 import { PlusCircle, MoreVertical, Edit2, Trash2, Video as VideoIcon } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/userContext';
-            import { Link } from 'react-router-dom';
-
+import { Link } from 'react-router-dom';
+import SecureDeleteChannel from './channelForms/DeleteChannel';
 const ChannelProfile = () => {
+
+const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState(null); // Track which video menu is open
@@ -59,13 +62,41 @@ const ChannelProfile = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="flex items-center gap-6 mt-6 pb-8 border-b border-yt-border">
-          <img src={channel.owner.avatar} className="w-24 h-24 rounded-full border-2 border-yt-border" alt="avatar" />
-          <div>
-            <h1 className="text-2xl font-bold">{channel.channelName}</h1>
-            <p className="text-yt-muted text-sm">@{channel.owner.username} • {videos.length} Videos</p>
-          </div>
-        </div>
+       <div className="flex flex-col xs:flex-row items-center justify-between gap-6 mt-6 pb-8 border-b border-yt-border">
+  <div className="flex items-center gap-6">
+    <img src={channel.owner.avatar} className="w-20 h-20 xxs:w-24 xxs:h-24 rounded-full border-2 border-yt-border" alt="avatar" />
+    <div>
+      <h1 className="text-xl xxs:text-2xl font-bold text-yt-text">{channel.channelName}</h1>
+      <p className="text-yt-muted text-sm">@{channel.owner.username} • {videos.length} Videos</p>
+    </div>
+  </div>
+
+  {/* Owner Controls */}
+  {isOwner && (
+    <div className="flex gap-3">
+      <button 
+        onClick={() => navigate('/studio/updateChannel', { state: { channel } })}
+        className="bg-yt-surface text-yt-text border border-yt-border px-4 py-2 rounded-full text-xs font-bold hover:bg-yt-border/50 transition-all"
+      >
+        Edit Channel
+      </button>
+      <button 
+        onClick={() => setIsDeleteModalOpen(true)}
+        className="bg-yt-primary/10 text-yt-primary border border-yt-primary/20 px-4 py-2 rounded-full text-xs font-bold hover:bg-yt-primary hover:text-white transition-all"
+      >
+        Delete Channel
+      </button>
+    </div>
+  )}
+</div>
+
+{/* Render the Secure Delete Modal */}
+{isDeleteModalOpen && (
+  <SecureDeleteChannel 
+    channelId={channel._id} 
+    onClose={() => setIsDeleteModalOpen(false)} 
+  />
+)}
 
         {/* 2. Simplified "Your Videos" Heading */}
         <div className="flex justify-between items-center mt-8 mb-6">

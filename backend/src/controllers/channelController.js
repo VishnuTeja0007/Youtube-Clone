@@ -1,12 +1,13 @@
 import Channel from "../models/channelModel.js";
 import Video from "../models/videoModel.js";
-
+import bcrypt from "bcryptjs"
 /**
  * @desc Create a new channel
  * @route POST /api/channels
  */
 export const createChannel = async (req, res) => {
   try {
+    console.log(req.body)
     const { channelName, description, channelBanner, uniqueDeleteKey } = req.body;
     const userId = req.user.id;
 
@@ -22,12 +23,12 @@ export const createChannel = async (req, res) => {
     if (existingChannel) {
       return res.status(400).json({ message: "User already has a channel" });
     }
-
+    const hashedDeleteKey = await bcrypt.hash(uniqueDeleteKey, 10);
     const newChannel = new Channel({
       channelName,
       description,
       channelBanner,
-      uniqueDeleteKey,
+      uniqueDeleteKey: hashedDeleteKey,
       owner: userId,
     });
 
@@ -98,7 +99,7 @@ export const deleteChannel = async (req, res) => {
     const { id } = req.params;
     const { uniqueDeleteKey } = req.body;
     const userId = req.user.id;
-
+  
     const channel = await Channel.findById(id);
 
     if (!channel) {
@@ -109,7 +110,7 @@ export const deleteChannel = async (req, res) => {
       return res.status(403).json({ message: "You are not authorized to delete this channel" });
     }
 
-    if (!uniqueDeleteKey || channel.uniqueDeleteKey !== uniqueDeleteKey) {
+    if (!uniqueDeleteKey || !(await bcrypt.compare(uniqueDeleteKey, channel.uniqueDeleteKey))) {
       return res.status(403).json({ message: "Invalid delete key verification" });
     }
 
@@ -119,5 +120,36 @@ export const deleteChannel = async (req, res) => {
     res.status(200).json({ message: "Channel deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting channel", error: error.message });
+  }
+};
+
+/**
+ * @desc Update channel details
+ * @route PUT /api/channels/:id
+ */
+export const updateChannel = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { channelName, description, channelBanner } = req.body;
+    const userId = req.user.id;
+
+    const channel = await Channel.findById(id);
+    console.log(channel)
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    if (channel.owner.toString() !== userId) {
+      return res.status(403).json({ message: "You are not authorized to update this channel" });
+    }
+
+    if (channelName) channel.channelName = channelName;
+    if (description !== undefined) channel.description = description;
+    if (channelBanner !== undefined) channel.channelBanner = channelBanner;
+
+    const updatedChannel = await channel.save();
+    res.status(200).json(updatedChannel);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating channel", error: error.message });
   }
 };
