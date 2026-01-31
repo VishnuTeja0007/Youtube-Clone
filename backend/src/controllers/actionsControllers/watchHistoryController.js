@@ -1,4 +1,5 @@
 import userModel from "../../models/userModel.js";
+import videoModel from "../../models/videoModel.js";
 
 async function setWatchHistory(req, res) {
     try {
@@ -30,6 +31,9 @@ async function setWatchHistory(req, res) {
                 watchedAt: new Date()
             });
             await user.save();
+            
+            // Increment video views count only when first watched
+            await videoModel.findByIdAndUpdate(videoId, { $inc: { views: 1 } });
         }
 
         res.status(200).json({

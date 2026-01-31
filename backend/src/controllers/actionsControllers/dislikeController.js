@@ -1,3 +1,5 @@
+import userModel from "../../models/userModel.js";
+import videoModel from "../../models/videoModel.js";
 async function toggleDislikeController(req, res) {
     try {
         const { videoId } = req.body;
@@ -21,6 +23,18 @@ async function toggleDislikeController(req, res) {
         }
 
         const updatedUser = await userModel.findByIdAndUpdate(id, update, { new: true });
+        
+        // Update video likes/dislikes count
+        let videoUpdate;
+        if (isAlreadyDisliked) {
+            // Decrement dislikes count
+            videoUpdate = { $inc: { dislikes: -1 } };
+        } else {
+            // Increment dislikes count and decrement likes if it was previously liked
+            videoUpdate = { $inc: { dislikes: 1, likes: -1 } };
+        }
+        
+        await videoModel.findByIdAndUpdate(videoId, videoUpdate);
         res.status(200).json({ 
             message: isAlreadyDisliked ? "Dislike removed" : "Video disliked", 
             user: updatedUser 

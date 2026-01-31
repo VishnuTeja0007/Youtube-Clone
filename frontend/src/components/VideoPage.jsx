@@ -9,17 +9,30 @@ import VideoPlayer from './VideoPlayer';
 import { useAuth } from '../contexts/userContext';
 import CommentSection from './CommentSection';
 const VideoPage = () => {
-  const {user}=useAuth()
+  const { user, login } = useAuth();
   const { id } = useParams();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper for Auth Headers
+  const getAuthHeader = () => ({
+    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+  });
+
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetching specific video based on URL ID
         const response = await axios.get(`http://localhost:3000/api/videos/${id}`);
         setVideo(response.data);
+        
+        // Add to watch history if user is logged in
+        if (user && response.data) {
+          await axios.post(
+            `http://localhost:3000/api/actions/watchhistory`, 
+            { videoId: id }, 
+            getAuthHeader()
+          );
+        }
       } catch (error) {
         console.error("Fetch error:", error);
       } finally {
@@ -27,7 +40,84 @@ const VideoPage = () => {
       }
     }
     fetchData();
-  }, [id]);
+  }, [id]); // Removed user from dependency to avoid loop, handled inside
+
+  const handleLike = async () => {
+    if (!user) return alert("Please login to like");
+    try {
+        console.log("like clicked")
+      const res = await axios.post(
+        `http://localhost:3000/api/actions/likes`,
+        { videoId: video._id },
+
+        getAuthHeader()
+      );
+      
+      // Update User Context
+      login({ ...user, ...res.data.user });
+
+      // Update Local Video State (Optimistic or based on logic)
+      setVideo(prev => {
+        const isLiked = user.likedVideos?.includes(video._id);
+        const isDisliked = user.dislikedVideos?.includes(video._id);
+        
+        let newLikes = prev.likes;
+        if (isLiked) newLikes--; // Removing like
+        else newLikes++; // Adding like
+        
+        return { ...prev, likes: newLikes };
+      });
+    } catch (err) {
+      console.error("Like error:", err?.message);
+    }
+  };
+
+  const handleDislike = async () => {
+    if (!user) return alert("Please login to dislike");
+    try {
+      const res = await axios.post(
+        `http://localhost:3000/api/actions/dislikes`,
+        { videoId: video._id },
+        getAuthHeader()
+      );
+      login({ ...user, ...res.data.user });
+      
+      // If was liked, we need to decrease like count in UI
+      if (user.likedVideos?.includes(video._id)) {
+        setVideo(prev => ({ ...prev, likes: prev.likes - 1 }));
+      }
+    } catch (err) {
+      console.error("Dislike error:", err);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    if (!user) return alert("Please login to subscribe");
+    if (!video.channel) return;
+    
+    try {
+      const res = await axios.post(
+        `http://localhost:3000/api/actions/subscribe`,
+        { channelId: video.channel._id },
+        getAuthHeader()
+      );
+      login({ ...user, ...res.data.user });
+      
+      // Update local subscriber count
+      setVideo(prev => ({
+        ...prev,
+        channel: {
+          ...prev.channel,
+          subscribers: res.data.subscribed 
+            ? prev.channel.subscribers + 1 
+            : prev.channel.subscribers - 1
+        }
+      }));
+    } catch (err) {
+      console.error("Subscribe error:", err.response?.data?.message || err.message);
+      if (err.response?.data?.message) alert(err.response.data.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -79,8 +169,15 @@ const VideoPage = () => {
           </div>
 
           {/* Subscribe Button */}
-          <button className="ml-4 px-4 py-2 bg-yt-text text-yt-bg rounded-full text-sm font-bold hover:opacity-90 active:scale-95 transition-all">
-            Subscribe
+          <button 
+            onClick={handleSubscribe}
+            className={`ml-4 px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 active:scale-95 transition-all ${
+              user?.subscribedChannels?.includes(video.channel?._id)
+                ? "bg-yt-surface text-yt-text border border-yt-border"
+                : "bg-yt-text text-yt-bg"
+            }`}
+          >
+            {user?.subscribedChannels?.includes(video.channel?._id) ? "Subscribed" : "Subscribe"}
           </button>
         </div>
 
@@ -88,28 +185,28 @@ const VideoPage = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
           {/* Like/Dislike Group */}
           <div className="flex items-center bg-yt-surface rounded-full border border-yt-border overflow-hidden shrink-0">
-            <button className="flex items-center gap-2 px-4 py-2 hover:bg-yt-border transition-colors border-r border-yt-border active:bg-yt-border/50">
-              <ThumbsUp size={18} />
+            <button 
+              onClick={handleLike}
+              className={`flex items-center gap-2 px-4 py-2 hover:bg-yt-border transition-colors border-r border-yt-border active:bg-yt-border/50 ${
+                user?.likedVideos?.includes(video._id) ? "text-white bg-white/10" : ""
+              }`}
+            >
+              <ThumbsUp size={18} fill={user?.likedVideos?.includes(video._id) ? "currentColor" : "none"} />
               <span className="text-sm font-bold">{video.likes?.toLocaleString()}</span>
             </button>
-            <button className="px-4 py-2 hover:bg-yt-border transition-colors active:bg-yt-border/50">
-              <ThumbsDown size={18} />
+            <button 
+              onClick={handleDislike}
+              className={`px-4 py-2 hover:bg-yt-border transition-colors active:bg-yt-border/50 ${
+                user?.dislikedVideos?.includes(video._id) ? "text-white bg-white/10" : ""
+              }`}
+            >
+              <ThumbsDown size={18} fill={user?.dislikedVideos?.includes(video._id) ? "currentColor" : "none"} />
             </button>
           </div>
 
           {/* Secondary Actions */}
-          <button className="flex items-center gap-2 px-4 py-2 bg-yt-surface rounded-full border border-yt-border hover:bg-yt-border transition-colors whitespace-nowrap active:scale-95">
-            <Share2 size={18} />
-            <span className="text-sm font-bold">Share</span>
-          </button>
-
-          <button className="flex items-center gap-2 px-4 py-2 bg-yt-surface rounded-full border border-yt-border hover:bg-yt-border transition-colors whitespace-nowrap active:scale-95">
-            <Download size={18} />
-            <span className="text-sm font-bold">Download</span>
-          </button>
-
-          <button className="p-2 bg-yt-surface rounded-full border border-yt-border hover:bg-yt-border transition-colors active:scale-90">
-            <MoreHorizontal size={18} />
+          <button className="p-2 px-4 bg-yt-surface rounded-full border border-yt-border hover:bg-yt-border transition-colors active:scale-90">
+            <span>View Channel</span>
           </button>
         </div>
       </div>

@@ -1,12 +1,13 @@
 import express from "express";
 import { createChannel, getAllChannels, getChannelById } from "../controllers/channelController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
+import { requestLogger } from "../middlewares/Logger.js";
 
 const channelRouter = express.Router();
 
 // Public routes
-channelRouter.get("/", getAllChannels);
-channelRouter.get("/:id", getChannelById);
+channelRouter.get("/", requestLogger, getAllChannels);
+channelRouter.get("/:id", requestLogger, getChannelById);
 
 // Protected routes
 channelRouter.post("/", authMiddleware, createChannel);
