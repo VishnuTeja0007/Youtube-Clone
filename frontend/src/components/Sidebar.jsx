@@ -8,7 +8,8 @@ import {
   ThumbsUp, 
   Video, 
   ChevronDown, 
-  UserCircle 
+  UserCircle, 
+  ThumbsDown
 } from 'lucide-react';
 
 /**
@@ -19,24 +20,15 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
   const { user } = useAuth();
   const [showAllSubs, setShowAllSubs] = useState(false);
 
-  const subscriptions = [
-    { name: 'English With Ran...', avatar: '🎓', isLive: false, hasNotif: true },
-    { name: 'SSC Adda247', avatar: '🅰️', isLive: true, hasNotif: false },
-    { name: 'Marvel Entertain...', avatar: '🦸', isLive: true, hasNotif: false },
-    { name: 'Adda247', avatar: '🅰️', isLive: true, hasNotif: false },
-    { name: 'Sansad TV', avatar: '🏛️', isLive: true, hasNotif: false },
-    { name: 'UC LIVE', avatar: '🎯', isLive: true, hasNotif: false },
-    { name: 'The Canadian Lad', avatar: '🇨🇦', isLive: false, hasNotif: false },
-  ];
+  const subscriptions =user?.subscribedChannels 
 
   const visibleSubs = showAllSubs ? subscriptions : subscriptions.slice(0, 6);
 
   const youItems = [
     { icon: Clock, label: 'History' },
-    { icon: List, label: 'Playlists' },
     { icon: Clock, label: 'Watch Later' },
     { icon: ThumbsUp, label: 'Liked videos' },
-    { icon: Video, label: 'Your videos' },
+    { icon: ThumbsDown, label: 'Disliked Videos' },
   ];
 
   return (
@@ -68,7 +60,9 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
           {/* Home Item - First to slide in */}
           <div className="animate-slide-in flex items-center gap-5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text transition-colors">
             <Home size={22} strokeWidth={2} />
+            <Link to="/">
             <span className="text-[14px] font-medium">Home</span>
+            </Link>
           </div>
 
           <div className="h-px my-3 bg-yt-border" />
@@ -84,7 +78,7 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
           <div className="space-y-0.5 animate-slide-in" style={{ animationDelay: '150ms' }}>
             {user && (
               <Link
-                to={`/channel/${user.id || 'me'}`}
+                to={`/channel/${user.channel._id}`}
                 className="flex items-center gap-5 px-3 py-2 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text"
               >
                 <UserCircle size={22} strokeWidth={2} />
@@ -95,13 +89,18 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
             {youItems.map((item, index) => {
               const Icon = item.icon;
               return (
+
+                
+                <Link to="/studio/manageAccount">
                 <div
                   key={index}
                   className="flex items-center gap-5 px-3 py-2 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text"
                 >
                   <Icon size={22} strokeWidth={2} />
                   <span className="text-[14px] font-medium">{item.label}</span>
-                </div>
+                
+                  </div>
+                </Link>
               );
             })}
           </div>
@@ -123,17 +122,16 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
                 className="flex items-center gap-4 px-3 py-2 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text group"
               >
                 <div className="w-6 h-6 flex items-center justify-center text-sm rounded-full bg-yt-surface border border-yt-border">
-                  {sub.avatar}
-                </div>
-                <span className="text-[14px] flex-1 truncate">{sub.name}</span>
-                <div className="flex items-center gap-1.5">
-                  {sub.hasNotif && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
-                  {sub.isLive && (
-                    <div className="flex items-center justify-center animate-live-pulse">
-                      <div className="w-2 h-2 rounded-full bg-yt-primary" />
+                   <div className="w-6 h-6 rounded-full overflow-hidden border border-yt-border flex-shrink-0 bg-yt-bg">
+                      <img 
+                        src={sub.channelBanner || `https://api.dicebear.com/7.x/initials/svg?seed=${sub.channelName}`} 
+                        className="w-full h-full object-cover" 
+                        alt={sub.channelName} 
+                      />
                     </div>
-                  )}
                 </div>
+                <span className="text-[14px] flex-1 truncate">{sub.channelName}</span>
+                
               </div>
             ))}
             

@@ -28,7 +28,7 @@ const VideoSideBar = () => {
 
   return (
 <div className="w-full lg:w-[400px] flex flex-col gap-3 mt-4 bg-yt-bg text-yt-text transition-colors duration-300">
-  {video.map((rec) => (
+  {video.slice(0,11).map((rec) => (
     <Link 
       to={`/watch/${rec._id}`} 
       key={rec._id} 

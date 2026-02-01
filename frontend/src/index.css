@@ -75,10 +75,10 @@
 :root {
   --yt-primary: #FF0000;
   --yt-bg: #ffffff;
-  --yt-surface: #f9f9f9;
+  --yt-surface: #f2f2f2;
   --yt-text: #0f0f0f;
   --yt-muted: #606060;
-  --yt-border: #e5e5e5;
+  --yt-border: #d0d0d0;
 }
 
 /* Dark theme colors (Swapped when .dark class is present) */
