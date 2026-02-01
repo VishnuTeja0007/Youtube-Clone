@@ -20,16 +20,14 @@ const Toast = ({ title = "Error", message, onClose }) => {
 
   return (
     open && <div className={`
-      fixed bottom-6 right-6 left-6 z-[100]
-      /* Responsive Sizing: Compact on mobile, wider and taller on desktop */
+      absolute bottom-6 right-6 left-6 z-100
+      h-auto
       sm:left-auto sm:w-[450px] md:w-[500px]
-      /* Entrance Animation */
       animate-slide-up transition-all duration-300
     `}>
       <div className="
         flex items-start gap-4 p-5 
-        bg-yt-bg border border-yt-border shadow-2xl
-        /* Visual Indicator: Square accent border per your style */
+        bg-yt-bg  border-yt-border shadow-2xl
         border-l-4 border-l-yt-primary
       ">
         

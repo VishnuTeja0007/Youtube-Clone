@@ -46,8 +46,8 @@ const HomePage = () => {
     <div className="min-h-screen bg-yt-bg transition-colors duration-300">
       
       {/* Sticky Category Bar */}
-      <div className="sticky top-14 z-30 w-full bg-yt-bg/95 backdrop-blur-sm border-b border-yt-border px-4 py-3">
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-none max-w-[1400px] mx-auto">
+      <div className="sticky top-0 z-30 w-full bg-yt-bg/95 backdrop-blur-sm border-b border-yt-border px-4 py-3">
+        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar max-w-[1400px] mx-auto">
           {categories.map((cat) => (
             <button
               key={cat}
@@ -67,7 +67,7 @@ const HomePage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[1400px] mx-auto">
+      <div className="max-w-[1400px] h-auto  relative mx-auto">
         <VideoGrid videos={filteredVideos} />
       </div>
     </div>

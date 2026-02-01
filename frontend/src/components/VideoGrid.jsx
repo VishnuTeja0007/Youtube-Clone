@@ -2,11 +2,43 @@ import React from 'react';
 import { Eye, ThumbsUp, ThumbsDown, Play, MoreVertical, UserCircle } from 'lucide-react';
 import Toast from './Toaster';
 import { Link } from 'react-router-dom';
+import { Search } from 'lucide-react';
 const VideoGrid = ({ videos = [], className = '' }) => {
   if (!videos.length) {
     return (
-      <Toast title="500 Server Issue" message="No Videos Found" onClose={()=>{console.log("close")}} />
-   
+<div className="flex h-full w-full flex-col items-center justify-center bg-transparent p-6 text-center">
+  {/* Modern Illustration or Icon */}
+  <div className="mb-6 rounded-full bg-yt-surface p-8 ring-8 ring-yt-border/10">
+    <Search size={48} className="text-yt-muted opacity-50" />
+  </div>
+
+  {/* Text Content */}
+  <div className="max-w-md space-y-2">
+    <h2 className="text-2xl font-bold tracking-tight text-yt-text md:text-3xl">
+      No videos found
+    </h2>
+    <p className="text-base text-yt-muted">
+      Try different keywords or check your spelling. You can also explore trending videos on the home page.
+    </p>
+  </div>
+
+  {/* Action Buttons */}
+  <div className="mt-8 flex flex-wrap justify-center gap-3">
+    <button
+      onClick={() => window.location.reload()}
+      className="rounded-full border border-yt-border px-6 py-2 text-sm font-medium text-yt-text transition-colors hover:bg-yt-surface active:scale-95"
+    >
+      Try Again
+    </button>
+    
+    <button
+      onClick={() => navigate('/')}
+      className="rounded-full bg-yt-text px-6 py-2 text-sm font-medium text-yt-bg transition-opacity hover:opacity-90 active:scale-95 dark:bg-white dark:text-black"
+    >
+      Go to Home
+    </button>
+  </div>
+</div>
     );
   }
 

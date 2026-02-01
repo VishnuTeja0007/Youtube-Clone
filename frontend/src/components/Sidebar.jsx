@@ -23,7 +23,7 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
 
   const subscriptions =user?.subscribedChannels 
 
-  const visibleSubs = showAllSubs ? subscriptions : subscriptions.slice(0, 6);
+  const visibleSubs = showAllSubs ? subscriptions : subscriptions?.slice(0, 6);
 
   const youItems = [
     { icon: Clock, label: 'History' },
@@ -118,7 +118,7 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
           </div>
 
           <div className="space-y-0.5 animate-slide-in" style={{ animationDelay: '250ms' }}>
-            {visibleSubs.map((sub, index) => (
+            {visibleSubs?.map((sub, index) => (
               <div
                 key={index}
                 className="flex items-center gap-4 px-3 py-2 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text group"

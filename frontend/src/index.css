@@ -44,6 +44,15 @@
     background: var(--yt-muted);
   }
 
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
   /* Ensure smooth color transitions for the whole app */
   html, body {
     @apply transition-colors duration-300;
