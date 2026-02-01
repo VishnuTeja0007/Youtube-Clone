@@ -14,6 +14,7 @@ import CreateVideo from './components/videoForms/UploadVideo.jsx'
 import UpdateVideo from './components/videoForms/UpdateVideo.jsx'
 import CreateChannel from './components/channelForms/CreateChannel.jsx'
 import UpdateChannel from './components/channelForms/UpdateChannel.jsx'
+import UpdateProfile from './components/userActions/UserUpdate.jsx'
 const appRouter = createBrowserRouter([
     {
         path: "/",
@@ -58,6 +59,9 @@ const appRouter = createBrowserRouter([
                     ,{
                         path:"createChannel",
                         element:<CreateChannel/>
+                    },{
+                        path:"updateProfile",
+                        element:<UpdateProfile/>
                     }
                     
                 ]

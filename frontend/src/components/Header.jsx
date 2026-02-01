@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/userContext';
 import { LogOut, Search, Sun, Moon, UserCircle } from 'lucide-react';
 
+import {  Settings, UserPen, MonitorPlay } from 'lucide-react';
 /**
  * Header Component
  * Uses Tailwind v4.1 @theme variables and responsive custom breakpoints.
@@ -90,46 +91,79 @@ const Header = ({ onMenuClick,searchTerm,setSearchTerm }) => {
         <button className="p-2 text-yt-text hover:bg-yt-surface rounded-full sm:hidden">
           <Search size={20} />
         </button>
+<div className="flex items-center gap-1 xs:gap-3">
+      {!user ? (
+        <button
+          onClick={() => navigate('/login')}
+          className="flex items-center gap-1.5 rounded-full border border-yt-border px-2 py-1.5 text-yt-primary transition-colors hover:bg-yt-primary/10 xs:px-3 active:scale-95"
+        >
+          <span className="text-xs font-medium xs:text-sm">Sign in</span>
+        </button>
+      ) : (
+        <div className="flex items-center gap-1 xs:gap-3">
+          
+          {/* 1. Profile Avatar & Hover Panel Wrapper */}
+          <div className="relative group py-2">
+            {/* The Trigger: Avatar */}
+            <img
+              src={user.avatar || 'https://via.placeholder.com/32'}
+              alt="Profile"
+              className="h-8 w-8 rounded-full border border-yt-border object-cover cursor-pointer hover:ring-2 hover:ring-yt-primary/20 transition-all"
+            />
 
-        {!user ? (
-          <button
-            onClick={() => navigate('/login')}
-            className="flex items-center gap-1.5 rounded-full border border-yt-border px-2 py-1.5 text-yt-primary transition-colors hover:bg-yt-primary/10 xs:px-3 active:scale-95"
-          >
-            <span className="text-xs font-medium xs:text-sm">Sign in</span>
-          </button>
-        ) : (
-          <div className="flex items-center gap-1 xs:gap-3">
-            
-            {/* Channel Link */}
-            <Link 
-              to={`/channel/${user.id || 'me'}`}
-              className="flex items-center gap-2 rounded-full p-2 text-yt-text transition-colors hover:bg-yt-surface md:px-3 group"
-              title="Your Channel"
-            >
-              <UserCircle size={20} strokeWidth={1.5} className="group-hover:text-yt-primary transition-colors" />
-              <span className="hidden text-xs font-semibold md:block">Channel</span>
-            </Link>
+            {/* 2. The Popover Panel */}
+            <div className="absolute right-0 top-full mt-1 w-64 xxs:w-72 bg-yt-bg border border-yt-border shadow-2xl rounded-2xl overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[200] transform group-hover:translate-y-0 translate-y-2">
+              
+              {/* Profile Header Section */}
+              <div className="flex flex-col items-center p-6 bg-yt-surface/50 border-b border-yt-border">
+                <img 
+                  src={user.avatar} 
+                  className="w-20 h-20 rounded-full border-4 border-yt-bg shadow-lg object-cover mb-3" 
+                  alt="Large Avatar" 
+                />
+                <h3 className="text-yt-text font-bold text-lg leading-tight">{user.username}</h3>
+                <p className="text-yt-muted text-xs truncate w-full text-center mt-1">{user.email}</p>
+              </div>
 
-            {/* Profile Avatar */}
-            <div className="flex items-center">
-              <img
-                src={user.avatar || 'https://via.placeholder.com/32'}
-                alt="Profile"
-                className="h-7 w-7 rounded-full border border-yt-border object-cover xs:h-8 xs:w-8 hover:opacity-90 cursor-pointer"
-              />
+              {/* Hyperlinks Section */}
+              <div className="p-2">
+                <Link 
+                  to="/settings/profile" 
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-yt-text hover:bg-yt-surface rounded-xl transition-colors font-medium"
+                >
+                  <Settings size={18} className="text-yt-muted" /> Manage Profile
+                </Link>
+
+                <Link 
+                  to="/studio/updateProfile" 
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-yt-text hover:bg-yt-surface rounded-xl transition-colors font-medium"
+                >
+                  <UserPen size={18} className="text-yt-muted" /> Update Profile
+                </Link>
+
+                {/* Conditional View or Create Channel */}
+                <Link 
+                  to={user.channel ? `/channel/${user.channel}` : "/studio/createChannel"} 
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-yt-text hover:bg-yt-surface rounded-xl transition-colors font-medium border-t border-yt-border mt-1 pt-3"
+                >
+                  <MonitorPlay size={18} className="text-yt-primary" />
+                  {user.channel ? "View Your Channel" : "Create a Channel"}
+                </Link>
+                
+                {/* Logout inside panel for mobile convenience */}
+                <button 
+                  onClick={logout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-500/5 rounded-xl transition-colors font-bold mt-1"
+                >
+                  <LogOut size={18} /> Sign out
+                </button>
+              </div>
             </div>
-            
-            {/* Logout Button */}
-            <button
-              onClick={logout}
-              className="group flex items-center gap-1 rounded-lg px-2 py-1.5 text-yt-muted transition-all hover:text-yt-primary hover:bg-yt-primary/5 text-[10px] xs:text-xs"
-            >
-              <LogOut size={14} className="transition-transform group-hover:-translate-x-0.5" />
-              <span className="hidden xs:block font-medium">Logout</span>
-            </button>
           </div>
-        )}
+
+        </div>
+      )}
+    </div>
       </div>
     </nav>
   );
