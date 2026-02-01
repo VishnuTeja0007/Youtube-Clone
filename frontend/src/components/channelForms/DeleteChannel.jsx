@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { AlertTriangle, X } from 'lucide-react';
+import { useAuth } from '../../contexts/userContext';
 
  const SecureDeleteChannel = ({ channelId, onClose }) => {
   const [key, setKey] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user, login } = useAuth();
 
   console.log(channelId)
 
@@ -26,6 +28,10 @@ import { AlertTriangle, X } from 'lucide-react';
       }
       },
        );
+      // Update local user context to remove channel reference before redirecting
+      if (user) {
+        login({ ...user, channel: null }, localStorage.getItem('token'));
+      }
       window.location.href = '/'; // Redirect to home after total deletion
     } catch (err) {
       alert(err.response?.data?.message || "Invalid Key");

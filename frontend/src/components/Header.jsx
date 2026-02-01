@@ -128,7 +128,7 @@ const Header = ({ onMenuClick,searchTerm,setSearchTerm }) => {
               {/* Hyperlinks Section */}
               <div className="p-2">
                 <Link 
-                  to="/settings/profile" 
+                  to="/studio/manageAccount" 
                   className="flex items-center gap-3 px-4 py-3 text-sm text-yt-text hover:bg-yt-surface rounded-xl transition-colors font-medium"
                 >
                   <Settings size={18} className="text-yt-muted" /> Manage Profile

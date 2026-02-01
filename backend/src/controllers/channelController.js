@@ -71,7 +71,10 @@ export const getChannelById = async (req, res) => {
 
     // 2. Fetch all videos belonging to this channel
     // We sort by 'createdAt' descending so newest videos appear first
-    const videos = await Video.find({ channel: id }).sort({ createdAt: -1 });
+    const videos = await Video.find({ channel: id })
+      .sort({ createdAt: -1 })
+      .populate("channel", "channelName description subscribers")
+      .populate("uploader", "username avatar");
 
     // 3. Send the combined data
     res.status(200).json({

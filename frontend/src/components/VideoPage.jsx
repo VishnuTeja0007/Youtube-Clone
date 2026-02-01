@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ThumbsUp, ThumbsDown, Share2, Download, 
-  MoreHorizontal, UserCircle, ListFilter 
+  MoreHorizontal, UserCircle, ListFilter, Clock
 } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
 import { useAuth } from '../contexts/userContext';
@@ -11,6 +12,7 @@ import CommentSection from './CommentSection';
 const VideoPage = () => {
   const { user, login } = useAuth();
   const { id } = useParams();
+  const navigate=useNavigate()
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,11 +29,12 @@ const VideoPage = () => {
         
         // Add to watch history if user is logged in
         if (user && response.data) {
-          await axios.post(
+          const historyRes = await axios.post(
             `http://localhost:3000/api/actions/watchhistory`, 
             { videoId: id }, 
             getAuthHeader()
           );
+          if (historyRes.data.user) login({ ...user, ...historyRes.data.user });
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -41,6 +44,12 @@ const VideoPage = () => {
     }
     fetchData();
   }, [id]); // Removed user from dependency to avoid loop, handled inside
+
+  // Check user interaction status
+  const isLiked = useMemo(() => user?.likedVideos?.some(v => v._id === video?._id), [user, video]);
+  const isDisliked = useMemo(() => user?.dislikedVideos?.some(v => v._id === video?._id), [user, video]);
+  const isSubscribed = useMemo(() => user?.subscribedChannels?.some(c => c._id === video?.channel?._id), [user, video]);
+  const isInWatchLater = useMemo(() => user?.watchLater?.some(v => v._id === video?._id), [user, video]);
 
   const handleLike = async () => {
     if (!user) return alert("Please login to like");
@@ -58,9 +67,6 @@ const VideoPage = () => {
 
       // Update Local Video State (Optimistic or based on logic)
       setVideo(prev => {
-        const isLiked = user.likedVideos?.includes(video._id);
-        const isDisliked = user.dislikedVideos?.includes(video._id);
-        
         let newLikes = prev.likes;
         if (isLiked) newLikes--; // Removing like
         else newLikes++; // Adding like
@@ -83,7 +89,7 @@ const VideoPage = () => {
       login({ ...user, ...res.data.user });
       
       // If was liked, we need to decrease like count in UI
-      if (user.likedVideos?.includes(video._id)) {
+      if (isLiked) {
         setVideo(prev => ({ ...prev, likes: prev.likes - 1 }));
       }
     } catch (err) {
@@ -108,14 +114,28 @@ const VideoPage = () => {
         ...prev,
         channel: {
           ...prev.channel,
-          subscribers: res.data.subscribed 
-            ? prev.channel.subscribers + 1 
-            : prev.channel.subscribers - 1
+          subscribers: isSubscribed 
+            ? prev.channel.subscribers - 1 
+            : prev.channel.subscribers + 1
         }
       }));
     } catch (err) {
       console.error("Subscribe error:", err.response?.data?.message || err.message);
       if (err.response?.data?.message) alert(err.response.data.message);
+    }
+  };
+
+  const handleWatchLater = async () => {
+    if (!user) return alert("Please login to use Watch Later");
+    try {
+      const res = await axios.post(
+        `http://localhost:3000/api/actions/watchlater`,
+        { videoId: video._id },
+        getAuthHeader()
+      );
+      login({ ...user, ...res.data.user });
+    } catch (err) {
+      console.error("Watch Later error:", err?.message);
     }
   };
 
@@ -172,40 +192,53 @@ const VideoPage = () => {
           <button 
             onClick={handleSubscribe}
             className={`ml-4 px-4 py-2 rounded-full text-sm font-bold hover:opacity-90 active:scale-95 transition-all ${
-              user?.subscribedChannels?.includes(video.channel?._id)
+              isSubscribed
                 ? "bg-yt-surface text-yt-text border border-yt-border"
                 : "bg-yt-text text-yt-bg"
             }`}
           >
-            {user?.subscribedChannels?.includes(video.channel?._id) ? "Subscribed" : "Subscribe"}
+            {isSubscribed ? "Subscribed" : "Subscribe"}
           </button>
         </div>
 
         {/* Action Buttons Container */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+          {/* Watch Later Button */}
+          <button 
+            onClick={handleWatchLater}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+              isInWatchLater 
+                ? "bg-yt-surface text-yt-primary border-yt-primary" 
+                : "bg-yt-surface text-yt-text border-yt-border hover:bg-yt-border"
+            }`}
+          >
+            <Clock size={18} className={isInWatchLater ? "fill-current" : ""} />
+            <span className="whitespace-nowrap">Watch Later</span>
+          </button>
+
           {/* Like/Dislike Group */}
           <div className="flex items-center bg-yt-surface rounded-full border border-yt-border overflow-hidden shrink-0">
             <button 
               onClick={handleLike}
               className={`flex items-center gap-2 px-4 py-2 hover:bg-yt-border transition-colors border-r border-yt-border active:bg-yt-border/50 ${
-                user?.likedVideos?.includes(video._id) ? "text-white bg-white/10" : ""
+                isLiked ? "text-white bg-white/10" : ""
               }`}
             >
-              <ThumbsUp size={18} fill={user?.likedVideos?.includes(video._id) ? "currentColor" : "none"} />
+              <ThumbsUp size={18} fill={isLiked ? "currentColor" : "none"} />
               <span className="text-sm font-bold">{video.likes?.toLocaleString()}</span>
             </button>
             <button 
               onClick={handleDislike}
               className={`px-4 py-2 hover:bg-yt-border transition-colors active:bg-yt-border/50 ${
-                user?.dislikedVideos?.includes(video._id) ? "text-white bg-white/10" : ""
+                isDisliked ? "text-white bg-white/10" : ""
               }`}
             >
-              <ThumbsDown size={18} fill={user?.dislikedVideos?.includes(video._id) ? "currentColor" : "none"} />
+              <ThumbsDown size={18} fill={isDisliked ? "currentColor" : "none"} />
             </button>
           </div>
 
           {/* Secondary Actions */}
-          <button className="p-2 px-4 bg-yt-surface rounded-full border border-yt-border hover:bg-yt-border transition-colors active:scale-90">
+          <button onClick={()=>{navigate(`/channel/${video.channel._id}`)}} className="p-2 px-4 bg-yt-surface rounded-full border border-yt-border hover:bg-yt-border transition-colors active:scale-90">
             <span>View Channel</span>
           </button>
         </div>

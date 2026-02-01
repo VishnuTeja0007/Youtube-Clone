@@ -3,8 +3,10 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Layout, KeyRound } from 'lucide-react';
 import Toast from '../Toaster';
+import { useAuth } from '../../contexts/userContext';
 
 const CreateChannel = () => {
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
   const [formData, setFormData] = useState({
@@ -17,7 +19,11 @@ const CreateChannel = () => {
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
     try {
-      await axios.post('http://localhost:3000/api/channels', formData,getAuthHeader(), { withCredentials: true });
+      const res = await axios.post('http://localhost:3000/api/channels', formData,getAuthHeader(), { withCredentials: true });
+      // Update user context to include the new channel ID
+      if (user) {
+        login({ ...user, channel: res.data._id }, localStorage.getItem('token'));
+      }
       setToast({ title: "Success", message: "Channel created! Redirecting..." });
       setTimeout(() => navigate('/channels'), 1500);
     } catch (err) {

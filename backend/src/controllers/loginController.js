@@ -14,7 +14,26 @@ const loginController = async (req, res) => {
     }
 
     // find user and explicitly include password
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email })
+      .select("+password")
+      .populate({
+        path: "likedVideos",
+        populate: { path: "channel uploader", select: "channelName username avatar" },
+      })
+      .populate({
+        path: "dislikedVideos",
+        populate: { path: "channel uploader", select: "channelName username avatar" },
+      })
+      .populate("channel")
+      .populate("subscribedChannels")
+      .populate({
+        path: "watchLater",
+        populate: { path: "channel uploader", select: "channelName username avatar" },
+      })
+      .populate({
+        path: "watchHistory.video",
+        populate: { path: "channel uploader", select: "channelName username avatar" },
+      });
 
     if (!user) {
       return res.status(404).json({
@@ -33,7 +52,7 @@ const loginController = async (req, res) => {
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: "60m" }
+      { expiresIn: "7d" }
     );
     // Generate a JWT token for the authenticated user session with 15 minute expiration
     res.status(200).json({
@@ -48,7 +67,8 @@ const loginController = async (req, res) => {
         dislikedVideos:user.dislikedVideos,
         watchHistory:user.watchHistory,
         channel:user.channel,
-        subscribedChannels:user.subscribedChannels
+        subscribedChannels:user.subscribedChannels,
+        watchLater: user.watchLater
       },
     });
   } catch (error) {
