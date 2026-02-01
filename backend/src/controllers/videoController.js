@@ -5,7 +5,7 @@ export const getAllVideos = async (req,res) => {
      try {
         const videos = await Video.find()
       .populate("channel", "channelName")
-      .populate("uploader", "username")
+      .populate("uploader", "username avatar")
       .sort({ createdAt: -1 }); // newest first
     if(videos.length==0){
         return res.status(404).json({ message: "No videos found" });

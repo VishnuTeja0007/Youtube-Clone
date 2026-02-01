@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 const VideoGrid = ({ videos = [], className = '' }) => {
   if (!videos.length) {
     return (
-      <Toast title="500 Server Issue" message="No Videos Found. Try After Sometime" onClose={()=>{console.log("close")}} />
+      <Toast title="500 Server Issue" message="No Videos Found" onClose={()=>{console.log("close")}} />
    
     );
   }
@@ -15,7 +15,9 @@ const VideoGrid = ({ videos = [], className = '' }) => {
       className={`
         /* Grid Layout: Start with 1, move to 2, cap at 3 for desktop */
         grid grid-cols-1 gap-x-6 gap-y-10 p-4
-        xs:grid-cols-2 
+        xs:grid-cols-1 
+        sm:grid-cols-2 
+       
         lg:grid-cols-3 
         
         /* 'Particular Dimension' Control */
@@ -47,7 +49,7 @@ const VideoCard = ({ video, index }) => {
   } = video;
 
   const animationDelay = `${index * 50}ms`;
-
+  console.log(video)
   return (
     <div 
       className="group animate-slide-up flex flex-col bg-yt-bg border border-yt-border transition-all duration-300 hover:shadow-xl hover:z-10"

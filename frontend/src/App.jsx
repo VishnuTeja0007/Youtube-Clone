@@ -20,7 +20,7 @@ function App() {
       {/* 1. Header: Pass the toggle function */}
       <Header onMenuClick={()=>{toggleSidebar(); console.log("toggled",isSidebarOpen);}} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      <div className="flex pt-14">
+      <div className="flex pt-14 ">
         
         {/* 2. Sidebar: Pass the open state and close function (for mobile overlay) */}
         <YouTubeSidebar 
@@ -30,7 +30,7 @@ function App() {
 
         {/* 3. Main Content Area */}
       <main className={`
-          flex-1 transition-all duration-300 ease-in-out
+          flex-1 transition-all duration-300 ease-in-out bg-yt-surface
           ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}
         `}>
           <div className="mx-auto max-w-[1600px] p-4 md:p-6">
