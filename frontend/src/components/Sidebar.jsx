@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/userContext';
 import { 
   Home, 
-  Clock, 
-  List, 
+  Clock,  
   ThumbsUp, 
   Video, 
   ChevronDown, 
@@ -16,6 +15,8 @@ import {
  * YouTubeSidebar Component
  * Integrated with v4.1 custom animations and scrollbar-yt.
  */
+
+
 export default function YouTubeSidebar({ isOpen, onClose }) {
   const { user } = useAuth();
   const [showAllSubs, setShowAllSubs] = useState(false);
@@ -46,6 +47,7 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
   className={`
     fixed top-14 left-0 
     w-64 h-[calc(100vh-3.5rem)] 
+  xxs:h-[calc(100%-3.5rem)]
     overflow-y-auto scrollbar-yt
     z-50 
     transition-transform duration-300 ease-in-out
