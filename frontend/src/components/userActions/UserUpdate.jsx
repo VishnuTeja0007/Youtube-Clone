@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/userContext'; // Adjust based on your co
 import Toast from '../Toaster';
 
 const UpdateProfile = () => {
-  const { user, login } = useAuth(); // 'login' usually updates the local user state
+  const { user, setUser } = useAuth(); // 'login' usually updates the local user state
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
 
@@ -33,7 +33,7 @@ const UpdateProfile = () => {
       setToast({ title: "Success", message: "Profile updated successfully!" });
       
       // Update global context so the header avatar changes immediately
-      if (login) login(res.data.user); 
+      if (setUser) setUser(res.data.user); 
 
       setTimeout(() => navigate(-1), 1500);
     } catch (err) {

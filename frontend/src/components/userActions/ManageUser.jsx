@@ -3,12 +3,12 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   History, ThumbsUp, ThumbsDown, Clock, 
-  Users, PlaySquare, Home, ChevronRight 
+  Users, PlaySquare, Home, ChevronRight, Trash2
 } from 'lucide-react';
 import { useAuth } from '../../contexts/userContext';
 
 const UserLibrary = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('History');
 
@@ -28,7 +28,31 @@ const UserLibrary = () => {
       }
     }
   };
-console.log(user)
+
+  const handleRemoveItem = async (e, videoId) => {
+    e.preventDefault(); // Prevent navigation to video
+    e.stopPropagation();
+
+    if (!window.confirm("Are you sure you want to remove this video from the list?")) return;
+
+    try {
+      let url = '';
+      if (activeTab === 'History') url = 'http://localhost:3000/api/actions/watchhistory';
+      if (activeTab === 'Watch Later') url = 'http://localhost:3000/api/actions/watchlater';
+
+      const res = await axios.delete(url, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        data: { videoId } // Send videoId in body for DELETE request
+      });
+      if (res.data.user) {
+        setUser(res.data.user);
+      }
+    } catch (err) {
+      console.error("Error removing item:", err);
+      alert(err.response?.data?.message || "Failed to remove item");
+    }
+  };
+
   if (!user) return <div className="bg-yt-bg min-h-screen text-yt-text p-10">Please log in.</div>;
 
   // Tabs Configuration with Populated Data Mapping
@@ -137,7 +161,7 @@ console.log(user)
             ) : (
             <div className="grid grid-cols-1 xxs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
               {currentData.map((video) => (
-                <Link to={`/watch/${video._id}`} key={video._id} className="flex flex-col gap-2 group">
+                <Link to={`/watch/${video._id}`} key={video._id} className="flex flex-col gap-2 group relative">
                   {/* Thumbnail with Hover Zoom */}
                   <div className="relative aspect-video bg-yt-surface rounded-xl overflow-hidden border border-yt-border">
                     <img 
@@ -149,6 +173,17 @@ console.log(user)
                        <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] text-white px-2 py-0.5 rounded font-bold uppercase">
                          Watched {new Date(video.watchedAt).toLocaleDateString()}
                        </div>
+                    )}
+                    
+                    {/* Delete Button for History and Watch Later */}
+                    {(activeTab === 'History' || activeTab === 'Watch Later') && (
+                      <button 
+                        onClick={(e) => handleRemoveItem(e, video._id)}
+                        className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                        title="Remove from list"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     )}
                   </div>
 

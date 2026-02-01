@@ -1,32 +1,56 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const UserContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Initialize state from localStorage to persist login across refreshes
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch user profile on mount if token exists
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await axios.get("http://localhost:3000/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser(res.data);
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+        localStorage.removeItem("token");
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initAuth();
+  }, []);
 
   const login = (userData, token) => {
-    console.log(token)
-    setUser(userData);
     if (token) {
       localStorage.setItem("token", token);
     }
-    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    setUser(null);
   };
 
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen bg-yt-bg text-yt-text">Loading...</div>;
+  }
+
   return (
-    <UserContext.Provider value={{ user, setUser, login, logout }}>
+    <UserContext.Provider value={{ user, setUser, login, logout, loading }}>
       {children}
     </UserContext.Provider>
   );

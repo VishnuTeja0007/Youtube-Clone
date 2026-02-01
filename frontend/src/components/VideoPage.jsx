@@ -10,7 +10,7 @@ import VideoPlayer from './VideoPlayer';
 import { useAuth } from '../contexts/userContext';
 import CommentSection from './CommentSection';
 const VideoPage = () => {
-  const { user, login } = useAuth();
+  const { user, setUser } = useAuth();
   const { id } = useParams();
   const navigate=useNavigate()
   const [video, setVideo] = useState(null);
@@ -34,7 +34,7 @@ const VideoPage = () => {
             { videoId: id }, 
             getAuthHeader()
           );
-          if (historyRes.data.user) login({ ...user, ...historyRes.data.user });
+          if (historyRes.data.user) setUser(prev => ({ ...prev, ...historyRes.data.user }));
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -63,7 +63,7 @@ const VideoPage = () => {
       );
       
       // Update User Context
-      login({ ...user, ...res.data.user });
+      setUser(prev => ({ ...prev, ...res.data.user }));
 
       // Update Local Video State (Optimistic or based on logic)
       setVideo(prev => {
@@ -86,7 +86,7 @@ const VideoPage = () => {
         { videoId: video._id },
         getAuthHeader()
       );
-      login({ ...user, ...res.data.user });
+      setUser(prev => ({ ...prev, ...res.data.user }));
       
       // If was liked, we need to decrease like count in UI
       if (isLiked) {
@@ -107,7 +107,7 @@ const VideoPage = () => {
         { channelId: video.channel._id },
         getAuthHeader()
       );
-      login({ ...user, ...res.data.user });
+      setUser(prev => ({ ...prev, ...res.data.user }));
       
       // Update local subscriber count
       setVideo(prev => ({
@@ -133,7 +133,7 @@ const VideoPage = () => {
         { videoId: video._id },
         getAuthHeader()
       );
-      login({ ...user, ...res.data.user });
+      setUser(prev => ({ ...prev, ...res.data.user }));
     } catch (err) {
       console.error("Watch Later error:", err?.message);
     }

@@ -6,7 +6,7 @@ import Toast from '../Toaster';
 import { useAuth } from '../../contexts/userContext';
 
 const CreateChannel = () => {
-  const { user, login } = useAuth();
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const CreateChannel = () => {
       const res = await axios.post('http://localhost:3000/api/channels', formData,getAuthHeader(), { withCredentials: true });
       // Update user context to include the new channel ID
       if (user) {
-        login({ ...user, channel: res.data._id }, localStorage.getItem('token'));
+        setUser(prev => ({ ...prev, channel: res.data._id }));
       }
       setToast({ title: "Success", message: "Channel created! Redirecting..." });
       setTimeout(() => navigate('/channels'), 1500);

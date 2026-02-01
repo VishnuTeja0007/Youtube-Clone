@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/userContext';
  const SecureDeleteChannel = ({ channelId, onClose }) => {
   const [key, setKey] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, login } = useAuth();
+  const { user, setUser } = useAuth();
 
   console.log(channelId)
 
@@ -30,7 +30,7 @@ import { useAuth } from '../../contexts/userContext';
        );
       // Update local user context to remove channel reference before redirecting
       if (user) {
-        login({ ...user, channel: null }, localStorage.getItem('token'));
+        setUser(prev => ({ ...prev, channel: null }));
       }
       window.location.href = '/'; // Redirect to home after total deletion
     } catch (err) {

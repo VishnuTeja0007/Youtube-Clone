@@ -60,7 +60,18 @@ async function removeFromWatchHistory(req, res) {
             id,
             { $pull: { watchHistory: { video: videoId } } },
             { new: true }
-        );
+        ).populate({
+            path: "watchHistory.video",
+            select: "title thumbnailUrl views category duration createdAt"
+        })
+        .populate("likedVideos")
+        .populate("dislikedVideos")
+        .populate("channel")
+        .populate("subscribedChannels")
+        .populate({
+            path: "watchLater",
+            populate: { path: "channel uploader", select: "channelName username avatar" },
+        });
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
@@ -68,8 +79,13 @@ async function removeFromWatchHistory(req, res) {
 
         res.status(200).json({
             message: "Video removed from watch history",
-            watchHistory: updatedUser.watchHistory
+            user: updatedUser
         });
+
+        console.log({
+            message: "Video removed from watch history",
+            user: updatedUser
+        })
 
     } catch (error) {
         console.error("Remove Watch History Error:", error);
