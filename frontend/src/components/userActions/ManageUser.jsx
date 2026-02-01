@@ -1,67 +1,95 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
-  History, 
-  ThumbsUp, 
-  ThumbsDown, 
-  Clock, 
-  Users, 
-  PlaySquare, 
-  Home 
+  History, ThumbsUp, ThumbsDown, Clock, 
+  Users, PlaySquare, Home, ChevronRight 
 } from 'lucide-react';
-import { useAuth } from '../contexts/userContext';
+import { useAuth } from '../../contexts/userContext';
 
 const UserLibrary = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('History');
 
-  if (!user) return <div className="bg-yt-bg h-screen text-yt-text p-10">Please log in to view your library.</div>;
+  const handleDeleteAccount = async () => {
+    if (window.confirm("Are you sure you want to delete your account? This will permanently delete your channel and all videos.")) {
+      try {
+        await axios.delete('http://localhost:3000/api/auth/delete', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        logout();
+        navigate('/register');
+      } catch (err) {
+        console.error("Delete account error:", err);
+        alert(err.response?.data?.message || "Failed to delete account");
+      }
+    }
+  };
+console.log(user)
+  if (!user) return <div className="bg-yt-bg min-h-screen text-yt-text p-10">Please log in.</div>;
 
-  // Tabs Configuration
+  // Tabs Configuration with Populated Data Mapping
   const tabs = [
-    { name: 'History', icon: <History size={18} />, data: user.watchHistory || [] },
-    { name: 'Subscriptions', icon: <Users size={18} />, data: user.subscribedChannels || [] },
-    { name: 'Liked', icon: <ThumbsUp size={18} />, data: user.likedVideos || [] },
-    { name: 'Disliked', icon: <ThumbsDown size={18} />, data: user.dislikedVideos || [] },
-    { name: 'Watch Later', icon: <Clock size={18} />, data: user.watchLater || [] },
+    { 
+      fieldName:"watchHistory",
+      name: 'History', 
+      icon: <History size={18} />, 
+      // Filter out null videos and map to a consistent structure
+      data: (user.watchHistory || [])
+        .filter(item => item.video !== null)
+        .map(item => ({ ...item.video, watchedAt: item.watchedAt }))
+    },
+    { fieldName:"subscribedChannels",name: 'Subscriptions', icon: <Users size={18} />, data: user.subscribedChannels || [] },
+    { fieldName:"likedVideos",name: 'Liked', icon: <ThumbsUp size={18} />, data: user.likedVideos || [] },
+    { fieldName:"dislikedVideos",name: 'Disliked', icon: <ThumbsDown size={18} />, data: user.dislikedVideos || [] },
+    { fieldName:"watchLater",name: 'Watch Later', icon: <Clock size={18} />, data: user.watchLater || [] },
   ];
 
-  const currentData = tabs.find(t => t.name === activeTab).data;
+  // Fix: Match by exact name instead of fieldName inclusion
+  const currentTabObj = tabs.find(t => t.name === activeTab);
+  const currentData = currentTabObj?.data || [];
 
   return (
-    <div className="bg-yt-bg min-h-screen text-yt-text transition-colors duration-300">
-      {/* 1. Profile Header (Similar to Channel Header) */}
-      <div className="max-w-7xl mx-auto px-4 xxs:px-8 pt-10">
-        <div className="flex items-center gap-6 pb-8 border-b border-yt-border">
+    <div className="bg-yt-bg min-h-screen text-yt-text transition-colors duration-300 pb-20">
+      <div className="max-w-7xl mx-auto px-4 xxs:px-8">
+        
+        {/* 1. Profile Summary Header */}
+        <div className="flex flex-col xs:flex-row items-center gap-6 py-10 border-b border-yt-border">
           <img 
             src={user.avatar} 
-            className="w-20 h-20 xxs:w-28 xxs:h-28 rounded-full border-2 border-yt-border shadow-xl object-cover" 
+            className="w-24 h-24 xxs:w-32 xxs:h-32 rounded-full border-4 border-yt-surface shadow-2xl object-cover" 
             alt="Profile" 
           />
-          <div>
-            <h1 className="text-2xl xxs:text-3xl font-bold">{user.username}</h1>
-            <p className="text-yt-muted text-sm">{user.email}</p>
-            <div className="mt-3 flex gap-2">
-               <span className="bg-yt-surface px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-yt-border">
-                 {user.watchHistory?.length || 0} Watched
-               </span>
-               <span className="bg-yt-surface px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-yt-border">
-                 {user.subscribedChannels?.length || 0} Subscriptions
-               </span>
+          <div className="text-center xs:text-left">
+            <h1 className="text-3xl font-bold tracking-tight">{user.username}</h1>
+            <p className="text-yt-muted text-sm mb-4">{user.email}</p>
+            <div className="flex flex-wrap justify-center xs:justify-start gap-2">
+               
+               <button onClick={() => navigate("/studio/updateProfile")} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">
+                 Customize Profile
+               </button>
+               <button onClick={() => { logout(); navigate('/'); }} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">
+                 Sign Out
+               </button>
+               <button onClick={handleDeleteAccount} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">
+                 Delete Account
+               </button>
             </div>
           </div>
         </div>
 
-        {/* 2. Horizontal Tab Navigation */}
-        <div className="flex gap-2 xxs:gap-6 mt-6 overflow-x-auto no-scrollbar border-b border-yt-border">
+        {/* 2. Navigation Tabs */}
+        <div className="flex gap-4 xxs:gap-8 mt-4 overflow-x-auto no-scrollbar border-b border-yt-border">
           {tabs.map((tab) => (
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`flex items-center gap-2 pb-4 px-2 text-sm font-bold uppercase tracking-tighter transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 pb-4 px-1 text-sm font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
                 activeTab === tab.name 
-                ? 'border-b-2 border-yt-text text-yt-text' 
+                ? 'border-b-2 border-yt-primary text-yt-text' 
                 : 'text-yt-muted hover:text-yt-text'
               }`}
             >
@@ -70,54 +98,90 @@ const UserLibrary = () => {
           ))}
         </div>
 
-        {/* 3. Content Section */}
-        <div className="py-8">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <PlaySquare size={20} className="text-yt-primary" />
-            Your {activeTab}
-          </h2>
+        {/* 3. Video Grid Section */}
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold flex items-center gap-2 uppercase tracking-tighter">
+              {currentTabObj.icon} {activeTab}
+            </h2>
+            <span className="text-yt-muted text-xs font-bold">
+              {currentData.length} {activeTab === 'Subscriptions' ? 'Channels' : 'Videos'}
+            </span>
+          </div>
 
           {currentData.length > 0 ? (
-            <div className="grid grid-cols-1 xxs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {currentData.map((item, index) => (
-                <div key={index} className="group cursor-pointer">
-                  {/* Video Card Mockup (Assumes full data is fetched) */}
-                  <div className="aspect-video bg-yt-surface rounded-xl overflow-hidden border border-yt-border relative">
-                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-                           <Home size={24} className="text-white" />
-                        </div>
-                     </div>
-                     {/* If it's history, display the date */}
-                     {item.watchedAt && (
-                        <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-white uppercase">
-                           {new Date(item.watchedAt).toLocaleDateString()}
-                        </div>
-                     )}
+            activeTab === 'Subscriptions' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentData.map((channel) => (
+                  <Link 
+                    to={`/channel/${channel._id}`} 
+                    key={channel._id} 
+                    className="flex items-center gap-4 p-4 bg-yt-surface rounded-xl border border-yt-border hover:border-yt-primary/50 transition-all group"
+                  >
+                    <div className="w-16 h-16 rounded-full overflow-hidden border border-yt-border flex-shrink-0 bg-yt-bg">
+                      <img 
+                        src={channel.channelBanner || `https://api.dicebear.com/7.x/initials/svg?seed=${channel.channelName}`} 
+                        className="w-full h-full object-cover" 
+                        alt={channel.channelName} 
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-base truncate group-hover:text-yt-primary transition-colors">{channel.channelName}</h3>
+                      <p className="text-xs text-yt-muted">{channel.subscribers?.toLocaleString() || 0} subscribers</p>
+                      {channel.description && <p className="text-xs text-yt-muted line-clamp-1 mt-1">{channel.description}</p>}
+                    </div>
+                    <ChevronRight className="text-yt-muted group-hover:text-yt-primary transition-colors" size={20} />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+            <div className="grid grid-cols-1 xxs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+              {currentData.map((video) => (
+                <Link to={`/watch/${video._id}`} key={video._id} className="flex flex-col gap-2 group">
+                  {/* Thumbnail with Hover Zoom */}
+                  <div className="relative aspect-video bg-yt-surface rounded-xl overflow-hidden border border-yt-border">
+                    <img 
+                      src={video.thumbnailUrl} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      alt={video.title} 
+                    />
+                    {video.watchedAt && (
+                       <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] text-white px-2 py-0.5 rounded font-bold uppercase">
+                         Watched {new Date(video.watchedAt).toLocaleDateString()}
+                       </div>
+                    )}
                   </div>
-                  <h3 className="mt-2 font-semibold text-sm line-clamp-2">
-                    {/* If item is just an ID, you'd show a skeleton or fetch details */}
-                    {item.video ? `Video ID: ${item.video}` : `Content ID: ${item}`}
-                  </h3>
-                  <p className="text-yt-muted text-xs mt-1">Click to view details</p>
-                </div>
+
+                  {/* Video Meta */}
+                  <div className="pr-4">
+                    <h3 className="font-bold text-sm line-clamp-2 leading-snug group-hover:text-yt-primary transition-colors">
+                      {video.title}
+                    </h3>
+                    <div className="text-yt-muted text-xs mt-1 flex items-center gap-1">
+                      <span>{video?.views?.toString()} views</span>
+                      <span>•</span>
+                      <span>{video.category}</span>
+                    </div>
+                  </div>
+                </Link>
               ))}
             </div>
+            )
           ) : (
-            /* 4. Empty State */
-            <div className="flex flex-col items-center justify-center py-20 space-y-6">
-              <div className="w-24 h-24 bg-yt-surface rounded-full flex items-center justify-center text-yt-muted">
-                 <PlaySquare size={40} />
+            /* 4. Empty State UI */
+            <div className="flex flex-col items-center justify-center py-24 bg-yt-surface/30 rounded-3xl border border-dashed border-yt-border">
+              <div className="w-20 h-20 bg-yt-surface rounded-full flex items-center justify-center text-yt-muted mb-6">
+                 <PlaySquare size={32} />
               </div>
-              <div className="text-center">
-                <h3 className="text-lg font-bold">No {activeTab} yet</h3>
-                <p className="text-yt-muted text-sm mt-1">Start exploring videos to fill up your library.</p>
-              </div>
+              <h3 className="text-lg font-bold">Nothing in {activeTab} yet</h3>
+              <p className="text-yt-muted text-sm mt-1 max-w-xs text-center">
+                Your activity and saved videos will appear here once you start watching.
+              </p>
               <button 
                 onClick={() => navigate('/')}
-                className="flex items-center gap-2 bg-yt-text text-yt-bg px-8 py-3 rounded-full font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-all"
+                className="mt-8 flex items-center gap-2 bg-yt-text text-yt-bg px-10 py-3 rounded-full font-black uppercase text-xs tracking-[0.2em] hover:opacity-90 transition-all shadow-lg"
               >
-                <Home size={16} /> Go to Homepage
+                <Home size={16} /> Explore Feed
               </button>
             </div>
           )}

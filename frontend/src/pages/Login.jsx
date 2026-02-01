@@ -55,10 +55,9 @@ const Login = () => {
         try {
             // API call placeholder for JWT login [Requirement 1.178]
             const response = await axios.post('http://localhost:3000/api/auth/login', formData);
-            localStorage.setItem('token', response.data.token);
 
             console.log('User logged in successfully');
-            login(response.data.user);
+            login(response.data.user, response.data.token);
 
             // Redirect to home page after successful login [Requirement 2.62]
             navigate('/');
