@@ -122,7 +122,7 @@ const Header = ({ onMenuClick, searchTerm, setSearchTerm }) => {
                 <div className="my-2 border-t border-yt-border" />
                 
                 <MenuLink 
-                  to={user.channel ? `/channel/${user.channel}` : "/studio/createChannel"} 
+                  to={user.channel ? `/channel/${user.channel._id}` : "/studio/createChannel"} 
                   icon={<MonitorPlay size={18} className="text-yt-primary" />} 
                   label={user.channel ? "Your Channel" : "Create a Channel"} 
                 />

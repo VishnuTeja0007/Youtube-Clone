@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { UserPen, Mail, AtSign, ArrowLeft,ImageIcon } from 'lucide-react';
-import { useAuth } from '../../contexts/userContext'; // Adjust based on your context path
+import { UserPen, Mail, AtSign, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { useAuth } from '../../contexts/userContext';
 import Toast from '../Toaster';
 
 const UpdateProfile = () => {
-  const { user, setUser } = useAuth(); // 'login' usually updates the local user state
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
 
@@ -24,8 +24,8 @@ const UpdateProfile = () => {
     e.preventDefault();
     try {
       const res = await axios.put('http://localhost:3000/api/auth/update', formData, {
-        headers:{
-            Authorization:`Bearer ${localStorage.getItem('token')}`
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         },
         withCredentials: true
       });
@@ -45,87 +45,96 @@ const UpdateProfile = () => {
   };
 
   return (
-    <div className="bg-yt-bg min-h-screen p-4 xs:p-8 transition-colors duration-300">
+    <div className="bg-yt-bg min-h-screen p-3 sm:p-6 md:p-8 transition-colors duration-300">
       {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-xl mx-auto">
         <button 
           onClick={() => navigate(-1)} 
-          className="flex items-center gap-2 text-yt-muted hover:text-yt-text mb-6 font-bold text-xs uppercase tracking-widest"
+          className="flex items-center gap-2 text-yt-muted hover:text-yt-text mb-4 sm:mb-6 font-bold text-xs uppercase tracking-wider transition-colors"
         >
-          <ArrowLeft size={16} /> Cancel
+          <ArrowLeft size={16} /> Back
         </button>
 
-        <div className="bg-yt-surface border border-yt-border rounded-3xl p-6 xxs:p-10 shadow-2xl">
-          <h2 className="text-2xl font-bold mb-10 flex items-center gap-3 text-yt-text uppercase tracking-tighter">
-            <UserPen className="text-yt-primary" size={28} /> Personal Info
+        <div className="bg-yt-surface border border-yt-border rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-6 sm:mb-8 md:mb-10 flex items-center gap-2 sm:gap-3 text-yt-text">
+            <UserPen className="text-yt-primary" size={20} sm:size={24} /> 
+            <span className="hidden xs:inline">Personal Info</span>
+            <span className="xs:hidden">Profile</span>
           </h2>
 
           {/* Live Preview Circle */}
-          <div className="flex flex-col items-center mb-10 space-y-4">
+          <div className="flex flex-col items-center mb-6 sm:mb-8 md:mb-10 space-y-3 sm:space-y-4">
             <div className="relative group">
               <img 
                 src={formData.avatar || 'https://via.placeholder.com/150'} 
-                className="w-28 h-28 rounded-full border-4 border-yt-bg object-cover shadow-xl transition-transform group-hover:scale-105"
-                alt="Avatar Preview" 
+                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full border-4 border-yt-bg object-cover shadow-xl transition-transform group-hover:scale-105"
+                alt="Avatar Preview"
+                onError={(e) => {
+                  e.target.src = 'https://via.placeholder.com/150';
+                }}
               />
               <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                 <span className="text-[10px] text-white font-black uppercase">Preview</span>
+                <span className="text-[10px] text-white font-black uppercase">Preview</span>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-yt-text font-bold text-lg">{formData.username || "Username"}</p>
-              <p className="text-yt-muted text-xs">{formData.email || "email@example.com"}</p>
+              <p className="text-yt-text font-bold text-base sm:text-lg">
+                {formData.username || "Username"}
+              </p>
+              <p className="text-yt-muted text-xs sm:text-sm">
+                {formData.email || "email@example.com"}
+              </p>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
             {/* Username Input */}
             <div className="space-y-2">
-              <label className="text-xs font-black text-yt-muted uppercase ml-1 flex items-center gap-2">
-                <AtSign size={14} /> Display Name
+              <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
+                <AtSign size={12} /> Display Name
               </label>
               <input 
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                className="w-full bg-yt-bg border border-yt-border p-4 rounded-2xl outline-none focus:border-yt-primary text-yt-text font-medium"
+                className="w-full bg-yt-bg border border-yt-border p-3 sm:p-4 rounded-lg sm:rounded-xl md:rounded-2xl outline-none focus:border-yt-primary text-yt-text font-medium text-sm sm:text-base transition-colors"
                 placeholder="How should we call you?"
               />
             </div>
 
             {/* Email Input */}
             <div className="space-y-2">
-              <label className="text-xs font-black text-yt-muted uppercase ml-1 flex items-center gap-2">
-                <Mail size={14} /> Email Address
+              <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
+                <Mail size={12} /> Email Address
               </label>
               <input 
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full bg-yt-bg border border-yt-border p-4 rounded-2xl outline-none focus:border-yt-primary text-yt-text font-medium"
+                className="w-full bg-yt-bg border border-yt-border p-3 sm:p-4 rounded-lg sm:rounded-xl md:rounded-2xl outline-none focus:border-yt-primary text-yt-text font-medium text-sm sm:text-base transition-colors"
                 placeholder="yourname@example.com"
               />
             </div>
 
             {/* Avatar URL Input */}
             <div className="space-y-2">
-              <label className="text-xs font-black text-yt-muted uppercase ml-1 flex items-center gap-2">
-                <ImageIcon size={14} /> Avatar Image URL
+              <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
+                <ImageIcon size={12} /> Avatar Image URL
               </label>
               <input 
                 name="avatar"
                 value={formData.avatar}
                 onChange={handleChange}
-                className="w-full bg-yt-bg border border-yt-border p-4 rounded-2xl outline-none focus:border-yt-primary text-yt-text font-medium"
+                className="w-full bg-yt-bg border border-yt-border p-3 sm:p-4 rounded-lg sm:rounded-xl md:rounded-2xl outline-none focus:border-yt-primary text-yt-text font-medium text-sm sm:text-base transition-colors"
                 placeholder="https://images.com/my-photo.png"
               />
             </div>
 
             <button 
               type="submit" 
-              className="w-full bg-yt-text text-yt-bg font-black py-5 rounded-2xl hover:opacity-90 transition-all uppercase tracking-[0.2em] mt-4 shadow-lg shadow-black/10"
+              className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl md:rounded-2xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] mt-4 shadow-lg text-sm sm:text-base"
             >
               Save Profile
             </button>

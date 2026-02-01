@@ -159,7 +159,7 @@ const UserLibrary = () => {
                 ))}
               </div>
             ) : (
-            <div className="grid grid-cols-1 xxs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
               {currentData.map((video) => (
                 <Link to={`/watch/${video._id}`} key={video._id} className="flex flex-col gap-2 group relative">
                   {/* Thumbnail with Hover Zoom */}

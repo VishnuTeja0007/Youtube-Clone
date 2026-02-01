@@ -24,9 +24,11 @@ const UpdateChannel = () => {
       navigate(-1);
     }
   }, [channelData, navigate]);
-const getAuthHeader = () => ({
+
+  const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -35,10 +37,11 @@ const getAuthHeader = () => ({
     e.preventDefault();
     
     try {
-      // Logic matches your updateChannel controller (PUT /api/channels/:id)
-      await axios.put(`http://localhost:3000/api/channels/${channelData._id}`, formData, getAuthHeader(), {
-        withCredentials: true
-      });
+      await axios.put(
+        `http://localhost:3000/api/channels/${channelData._id}`, 
+        formData, 
+        getAuthHeader()
+      );
       
       setToast({ title: "Updated", message: "Channel details refreshed successfully!" });
       
@@ -53,31 +56,33 @@ const getAuthHeader = () => ({
   };
 
   return (
-    <div className="bg-yt-bg min-h-screen p-4 xs:p-8 transition-colors duration-300">
+    <div className="bg-yt-bg min-h-screen p-3 sm:p-6 md:p-8 transition-colors duration-300">
       {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-3xl mx-auto">
         {/* Navigation Header */}
         <button 
           onClick={() => navigate(-1)} 
-          className="flex items-center gap-2 text-yt-muted hover:text-yt-text mb-8 transition-colors font-bold text-xs uppercase tracking-widest"
+          className="flex items-center gap-2 text-yt-muted hover:text-yt-text mb-4 sm:mb-6 transition-colors font-bold text-xs uppercase tracking-wider"
         >
-          <ArrowLeft size={16} /> Back to Profile
+          <ArrowLeft size={16} /> Back
         </button>
 
-        <div className="bg-yt-surface border border-yt-border rounded-2xl p-6 xxs:p-10 shadow-xl">
-          <h2 className="text-2xl font-bold mb-8 flex items-center gap-3 text-yt-text uppercase tracking-tighter">
-            <Edit3 className="text-yt-primary" size={28} /> Customize Channel
+        <div className="bg-yt-surface border border-yt-border rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-6 sm:mb-8 flex items-center gap-2 sm:gap-3 text-yt-text">
+            <Edit3 className="text-yt-primary" size={20} /> 
+            <span className="hidden xs:inline">Customize Channel</span>
+            <span className="xs:hidden">Edit Channel</span>
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 md:space-y-8">
             
             {/* 1. Banner Preview & Input */}
-            <div className="space-y-3">
-              <label className="text-xs font-black text-yt-muted uppercase ml-1 flex items-center gap-2">
-                <ImageIcon size={14} /> Channel Banner URL
+            <div className="space-y-2 sm:space-y-3">
+              <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
+                <ImageIcon size={12} /> Channel Banner
               </label>
-              <div className="relative w-full h-32 xxs:h-48 bg-yt-bg rounded-xl overflow-hidden border border-yt-border group">
+              <div className="relative w-full h-24 sm:h-32 md:h-40 bg-yt-bg rounded-lg sm:rounded-xl overflow-hidden border border-yt-border group">
                 {formData.channelBanner ? (
                   <img 
                     src={formData.channelBanner} 
@@ -85,7 +90,9 @@ const getAuthHeader = () => ({
                     alt="Banner Preview" 
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-yt-muted text-[10px] font-bold">NO BANNER SET</div>
+                  <div className="w-full h-full flex items-center justify-center text-yt-muted text-xs font-bold">
+                    NO BANNER SET
+                  </div>
                 )}
               </div>
               <input 
@@ -93,29 +100,29 @@ const getAuthHeader = () => ({
                 value={formData.channelBanner}
                 onChange={handleChange}
                 placeholder="https://example.com/banner.jpg"
-                className="w-full bg-yt-bg border border-yt-border p-3 rounded-xl text-sm outline-none focus:border-yt-primary text-yt-text"
+                className="w-full bg-yt-bg border border-yt-border p-2.5 sm:p-3 rounded-lg sm:rounded-xl text-xs sm:text-sm outline-none focus:border-yt-primary text-yt-text transition-colors"
               />
             </div>
 
             {/* 2. Channel Name */}
             <div className="space-y-2">
-              <label className="text-xs font-black text-yt-muted uppercase ml-1">Channel Name</label>
+              <label className="text-xs font-bold text-yt-muted uppercase ml-1">Channel Name</label>
               <input 
                 name="channelName"
                 value={formData.channelName}
                 onChange={handleChange}
-                className="w-full bg-yt-bg border border-yt-border p-4 rounded-xl font-bold text-lg outline-none focus:border-yt-primary text-yt-text"
+                className="w-full bg-yt-bg border border-yt-border p-3 sm:p-4 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg outline-none focus:border-yt-primary text-yt-text transition-colors"
               />
             </div>
 
             {/* 3. Description */}
             <div className="space-y-2">
-              <label className="text-xs font-black text-yt-muted uppercase ml-1">Description</label>
+              <label className="text-xs font-bold text-yt-muted uppercase ml-1">Description</label>
               <textarea 
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full bg-yt-bg border border-yt-border p-4 rounded-xl h-40 text-sm outline-none focus:border-yt-primary text-yt-text leading-relaxed"
+                className="w-full bg-yt-bg border border-yt-border p-3 sm:p-4 rounded-lg sm:rounded-xl h-28 sm:h-36 md:h-40 text-xs sm:text-sm outline-none focus:border-yt-primary text-yt-text leading-relaxed transition-colors resize-none"
                 placeholder="Describe your channel to your audience..."
               />
             </div>
@@ -123,7 +130,7 @@ const getAuthHeader = () => ({
             {/* Action Button */}
             <button 
               type="submit" 
-              className="w-full bg-yt-text text-yt-bg font-black py-5 rounded-xl hover:opacity-90 transition-all uppercase tracking-[0.2em] shadow-lg shadow-black/10"
+              className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] shadow-lg text-sm sm:text-base"
             >
               Update Channel
             </button>
