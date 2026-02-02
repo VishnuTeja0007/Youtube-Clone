@@ -67,6 +67,13 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
             </Link>
           </div>
 
+           <div className="animate-slide-in flex items-center gap-5 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text transition-colors">
+            <Video size={22} strokeWidth={2} />
+            <Link to="/channel">
+            
+            <span className="text-[14px] font-medium">Explore</span>
+            </Link>
+          </div>
           <div className="h-px my-3 bg-yt-border" />
 
           {/* You Section - Staggered delay */}
@@ -150,6 +157,7 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
               </span>
             </button>
           </div>
+
         </div>
 
         {/* Footer */}

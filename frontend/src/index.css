@@ -78,6 +78,16 @@
   --color-yt-text: var(--yt-text);
   --color-yt-muted: var(--yt-muted);
   --color-yt-border: var(--yt-border);
+
+  /* Toast Type Colors */
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-milestone: var(--milestone);
+  --color-trending: var(--trending);
+  --color-like: var(--like);
+  --color-notification: var(--notification);
 }
 
 /* Light theme colors (Source of Truth) */
@@ -88,6 +98,25 @@
   --yt-text: #0f0f0f;
   --yt-muted: #606060;
   --yt-border: #d0d0d0;
+
+  /* Toast Base Colors */
+  --success: #22c55e;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+  --milestone: #a855f7;
+  --trending: #f97316;
+  --like: #ec4899;
+  --notification: #6366f1;
+
+  /* Aliases for components using var(--color-dark-*) */
+  --color-dark-bg: var(--yt-bg);
+  --color-dark-surface: var(--yt-surface);
+  --color-dark-border: var(--yt-border);
+  --color-dark-text: var(--yt-text);
+  --color-dark-muted: var(--yt-muted);
+  --color-dark-primary: var(--yt-primary);
+  --color-dark-accent: #3ea6ff;
 }
 
 /* Dark theme colors (Swapped when .dark class is present) */
