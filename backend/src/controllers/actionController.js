@@ -2,10 +2,11 @@ import User from "../models/userModel.js";
 import Video from "../models/videoModel.js";
 
 export const toggleWatchLater = async (req, res) => {
+  // Logic to add or remove a video from the user's "Watch Later" list
   try {
     const { videoId } = req.body;
     const userId = req.user.id;
-
+    // Find the user to check current watch later status
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -50,9 +51,8 @@ export const toggleWatchLater = async (req, res) => {
       message: isAdded ? "Removed from Watch Later" : "Added to Watch Later",
       user: updatedUser,
     });
-    
+    // Handle potential errors during the toggle operation
   } catch (error) {
     res.status(500).json({ message: "Error toggling Watch Later", error: error.message });
   }
 };
-

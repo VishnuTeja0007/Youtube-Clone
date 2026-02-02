@@ -14,7 +14,7 @@ const router = express.Router();
 
 // Apply logger to all video routes
 router.use(requestLogger);
-
+// Video management routes
 router.get("/", getAllVideos);
 router.get("/:id", getVideoById);
 router.post("/", authMiddleware, checkOwner, createVideo);

@@ -7,11 +7,11 @@ import getUserController from "../controllers/getUserController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 import { requestLogger } from "../middlewares/Logger.js";
 
-//comment
+// Initialize the authentication router
 const router = express.Router();
 router.use(requestLogger);
 
-//comment
+// Auth and user management endpoints
 router.post("/register", registerController);
 router.post("/login", loginController);
 router.put("/update", authMiddleware, updateUserController);

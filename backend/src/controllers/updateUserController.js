@@ -19,7 +19,7 @@ const updateUserController = async (req, res) => {
     if (username) updates.username = username;
     if (email) updates.email = email;
     if (avatar) updates.avatar = avatar;
-
+    // Apply updates and return the user with populated fields for frontend state sync
     const updatedUser = await User.findByIdAndUpdate(userId, updates, {
       new: true,
       runValidators: true,

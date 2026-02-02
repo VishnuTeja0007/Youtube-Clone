@@ -9,7 +9,7 @@ async function setWatchHistory(req, res) {
         if (!videoId) {
             return res.status(400).json({ message: "Video ID is required" });
         }
-
+        // Find the user to update their watch history
         const user = await userModel.findById(id);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -68,7 +68,7 @@ async function setWatchHistory(req, res) {
         res.status(500).json({ message: "Error updating watch history", error: error.message });
     }
 }
-
+// Controller to remove a video from the user's watch history
 async function removeFromWatchHistory(req, res) {
     try {
         const { videoId } = req.body;
@@ -77,7 +77,7 @@ async function removeFromWatchHistory(req, res) {
         if (!videoId) {
             return res.status(400).json({ message: "Video ID is required" });
         }
-
+        // Pull the video from watch history and return the updated user with populated fields
         const updatedUser = await userModel.findByIdAndUpdate(
             id,
             { $pull: { watchHistory: { video: videoId } } },
@@ -94,7 +94,7 @@ async function removeFromWatchHistory(req, res) {
             path: "watchLater",
             populate: { path: "channel uploader", select: "channelName username avatar" },
         });
-
+        // Verify if the update was successful
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
         }
@@ -114,6 +114,6 @@ async function removeFromWatchHistory(req, res) {
         res.status(500).json({ message: "Error removing from watch history", error: error.message });
     }
 }
-
+// Export the watch history controllers
 export default setWatchHistory;
 export { removeFromWatchHistory };

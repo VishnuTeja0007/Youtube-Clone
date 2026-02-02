@@ -1,6 +1,6 @@
 import Video from "../models/videoModel.js";
 import { logError } from "../utils/logger.js";
-
+// Controller to fetch all videos with channel and uploader info
 export const getAllVideos = async (req,res) => {
      try {
         const videos = await Video.find()
@@ -16,7 +16,7 @@ export const getAllVideos = async (req,res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
+// Controller to handle new video uploads
 export const createVideo = async (req, res) => {
   try {
     const { title, description, videoUrl, thumbnailUrl, category } = req.body;
@@ -40,12 +40,12 @@ export const createVideo = async (req, res) => {
     res.status(500).json({ message: "Error creating video", error: error.message });
   }
 };
-
+// Controller to update existing video metadata
 export const updateVideo = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, thumbnailUrl, category } = req.body;
-
+    // Find and update the video by ID
     const updatedVideo = await Video.findByIdAndUpdate(
       id,
       { title, description, thumbnailUrl, category },
@@ -58,7 +58,7 @@ export const updateVideo = async (req, res) => {
     res.status(500).json({ message: "Error updating video", error: error.message });
   }
 };
-
+// Controller to remove a video from the database
 export const deleteVideo = async (req, res) => {
   try {
     await Video.findByIdAndDelete(req.params.id);
@@ -68,7 +68,7 @@ export const deleteVideo = async (req, res) => {
     res.status(500).json({ message: "Error deleting video", error: error.message });
   }
 };
-
+// Controller to fetch a single video's details by its ID
 export const getVideoById = async (req,res) => {
     try {
     const video = await Video.findById(req.params.id)

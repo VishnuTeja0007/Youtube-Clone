@@ -1,10 +1,11 @@
 import userModel from "../../models/userModel.js";
 
+// Controller to toggle subscription status for a channel
 async function toggleSubscibeController(req, res) {
     try {
         const { channelId } = req.body;
-        const { id } = req.user; // Authenticated user's ID
-
+        const { id } = req.user;
+        
         // 1. Check if the user is trying to subscribe to themselves
         if (id === channelId) {
             return res.status(400).json({ 

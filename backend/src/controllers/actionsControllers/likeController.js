@@ -4,7 +4,7 @@ async function toggleLikeController(req, res) {
     try {
         const { videoId } = req.body;
         const { id } = req.user;
-
+        // Find the user to determine if the video is already liked
         const user = await userModel.findById(id);
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -21,7 +21,7 @@ async function toggleLikeController(req, res) {
                 $pull: { dislikedVideos: videoId } 
             };
         }
-
+        // Apply the update and return the populated user object
         const updatedUser = await userModel.findByIdAndUpdate(id, update, { new: true })
             .populate({
                 path: "likedVideos",

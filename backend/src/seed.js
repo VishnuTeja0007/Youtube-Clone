@@ -42,7 +42,7 @@ const seedDatabase = async () => {
       });
       users.push(user);
     }
-    console.log("✅ Created 5 Users.");
+    console.log("api Created 5 Users.");
 
     // 3. Create 5 Channels (1 per User)
     for (let i = 0; i < 5; i++) {
@@ -61,7 +61,7 @@ const seedDatabase = async () => {
       user.channel = channel._id;
       await user.save();
     }
-    console.log("✅ Created 5 Channels (1 per user).");
+    console.log("api Created 5 Channels (1 per user).");
     let categories=[ "Music", 
     "Gaming", 
     "Education", 
@@ -90,7 +90,7 @@ const seedDatabase = async () => {
         videos.push(video);
       }
     }
-    console.log("✅ Created 30 Videos (6 per channel).");
+    console.log("api Created 30 Videos (6 per channel).");
 
     // 5. Create Comments (5 per Video, 1 from each User)
     const commentDocs = [];
@@ -104,7 +104,7 @@ const seedDatabase = async () => {
       }
     }
     await Comment.insertMany(commentDocs);
-    console.log(`✅ Created ${commentDocs.length} Comments (5 per video).`);
+    console.log(`api Created ${commentDocs.length} Comments (5 per video).`);
 
     console.log("✨ Database seeded successfully!");
     process.exit(0);

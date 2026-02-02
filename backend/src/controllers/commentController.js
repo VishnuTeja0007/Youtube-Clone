@@ -1,9 +1,6 @@
 import Comment from "../models/commentModel.js";
 
-/**
- * @desc Get all comments for a specific video
- * @route GET /api/comments/:videoId
- */
+// Controller to retrieve all comments for a specific video
 export const getAllComments = async (req, res) => {
   try {
     const { videoId } = req.params;
@@ -20,10 +17,8 @@ export const getAllComments = async (req, res) => {
   }
 };
 
-/**
- * @desc Handle inline comment edits (Pencil/Tick logic)
- * @route PATCH /api/comments/:id
- */
+// Controller to handle updates to an existing comment
+
 export const handleCommentEdits = async (req, res) => {
   try {
     const { id } = req.params;
@@ -51,10 +46,8 @@ export const handleCommentEdits = async (req, res) => {
   }
 };
 
-/**
- * @desc Add a new comment
- * @route POST /api/comments
- */
+// Controller to add a new comment to a video
+
 export const addComment = async (req, res) => {
   try {
     const { text, videoId } = req.body;
@@ -81,10 +74,9 @@ export const addComment = async (req, res) => {
   }
 };
 
-/**
- * @desc Delete a comment
- * @route DELETE /api/comments/:id
- */
+// Controller to delete a comment, with ownership verification
+
+
 export const deleteComment = async (req, res) => {
   try {
     const { id } = req.params;

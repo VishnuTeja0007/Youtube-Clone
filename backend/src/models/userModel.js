@@ -29,14 +29,14 @@ const userSchema = new mongoose.Schema(
 
     channel: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Channel",
+      ref: "Channel", // Reference to the user's own channel
       default: null,
     },
      // Subscribed channels
     subscribedChannels: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Channel",
+        ref: "Channel", // List of channels the user has subscribed to
       },
     ],
 
@@ -44,13 +44,13 @@ const userSchema = new mongoose.Schema(
     likedVideos: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Video",
+        ref: "Video", // List of videos the user has liked
       },
     ],
     dislikedVideos: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Video",
+        ref: "Video", // List of videos the user has disliked
       },
     ],
 
@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema(
      watchLater: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Video",
+        ref: "Video", // List of videos saved for later viewing
       },
     ],
 
@@ -67,7 +67,7 @@ const userSchema = new mongoose.Schema(
       {
         video: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Video",
+          ref: "Video", // Reference to a video in the user's watch history
         },
         watchedAt: {
           type: Date,
@@ -83,5 +83,3 @@ const userSchema = new mongoose.Schema(
 
  
 export default mongoose.model("User", userSchema);
-
-

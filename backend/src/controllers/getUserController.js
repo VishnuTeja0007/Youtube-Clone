@@ -1,9 +1,9 @@
 import User from "../models/userModel.js";
-
+// Controller to get the current authenticated user's profile
 const getUserController = async (req, res) => {
   try {
     const userId = req.user.id;
-
+    // Fetch user data, excluding password, and populate all relevant relational data
     const user = await User.findById(userId)
       .select("-password")
       .populate({

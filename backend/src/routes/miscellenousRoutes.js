@@ -10,6 +10,8 @@ import {requestLogger} from "../middlewares/Logger.js"
 const router = express.Router();
 router.use(requestLogger)
 
+// Routes for various user actions like liking, subscribing, and history management
+
 router.post("/likes", authMiddleware, toggleLikeController);
 router.post("/subscribe", authMiddleware, toggleSubscribeController);
 router.post("/dislikes", authMiddleware, toggleDislikeController);

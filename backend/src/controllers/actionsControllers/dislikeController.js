@@ -7,7 +7,7 @@ async function toggleDislikeController(req, res) {
 
         const user = await userModel.findById(id);
         if (!user) return res.status(404).json({ message: "User not found" });
-
+        // Check if the video is already in the user's disliked list
         const isAlreadyDisliked = user.dislikedVideos.includes(videoId);
         let update;
 
@@ -21,7 +21,7 @@ async function toggleDislikeController(req, res) {
                 $pull: { likedVideos: videoId } 
             };
         }
-
+        // Update the user document and return it with populated fields
         const updatedUser = await userModel.findByIdAndUpdate(id, update, { new: true })
             .populate({
                 path: "likedVideos",
@@ -51,7 +51,7 @@ async function toggleDislikeController(req, res) {
             // Increment dislikes count and decrement likes if it was previously liked
             videoUpdate = { $inc: { dislikes: 1, likes: -1 } };
         }
-        
+        // Update the video's like/dislike counters
         await videoModel.findByIdAndUpdate(videoId, videoUpdate);
         res.status(200).json({ 
             message: isAlreadyDisliked ? "Dislike removed" : "Video disliked", 

@@ -1,10 +1,9 @@
 import Channel from "../models/channelModel.js";
 import Video from "../models/videoModel.js";
 import bcrypt from "bcryptjs"
-/**
- * @desc Create a new channel
- * @route POST /api/channels
- */
+
+
+// Controller to handle the creation of a new channel
 export const createChannel = async (req, res) => {
   try {
     console.log(req.body)
@@ -39,10 +38,9 @@ export const createChannel = async (req, res) => {
   }
 };
 
-/**
- * @desc Get all channels
- * @route GET /api/channels
- */
+
+// Controller to retrieve all available channels
+
 export const getAllChannels = async (req, res) => {
   try {
     const channels = await Channel.find().populate("owner", "username avatar");
@@ -51,11 +49,7 @@ export const getAllChannels = async (req, res) => {
     res.status(500).json({ message: "Error fetching channels", error: error.message });
   }
 };
-
-/**
- * @desc Get channel by ID
- * @route GET /api/channels/:id
- */
+// Controller to fetch a specific channel's details and its videos
 
 export const getChannelById = async (req, res) => {
   try {
@@ -92,11 +86,7 @@ export const getChannelById = async (req, res) => {
     });
   }
 };
-
-/**
- * @desc Delete channel
- * @route DELETE /api/channels/:id
- */
+// Controller to delete a channel and its associated content
 export const deleteChannel = async (req, res) => {
   try {
     const { id } = req.params;

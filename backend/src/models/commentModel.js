@@ -9,13 +9,13 @@ const commentSchema = new mongoose.Schema(
 
     video: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Video",
+      ref: "Video", // The video this comment belongs to
       required: true,
     },
 
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "User", // The user who authored the comment
       required: true,
     },
   },

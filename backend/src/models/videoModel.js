@@ -45,13 +45,13 @@ const videoSchema = new mongoose.Schema(
 
     channel: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Channel",
+      ref: "Channel", // The channel this video belongs to
       required: true,
     },
 
     uploader: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "User", // The user who uploaded the video
       required: true,
     },
   },

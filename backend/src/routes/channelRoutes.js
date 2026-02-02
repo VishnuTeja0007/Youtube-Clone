@@ -4,13 +4,13 @@ import authMiddleware from "../middlewares/authMiddleware.js";
 import { requestLogger } from "../middlewares/Logger.js";
 
 const channelRouter = express.Router();
-
-// Public routes
+// Publicly accessible routes
 channelRouter.use(requestLogger)
 channelRouter.get("/", requestLogger, getAllChannels);
 channelRouter.get("/:id", requestLogger, getChannelById);
 
 // Protected routes
+// Routes that require user authentication
 channelRouter.post("/", authMiddleware, createChannel);
 channelRouter.put("/:id", authMiddleware, updateChannel);
 channelRouter.delete("/:id", authMiddleware, deleteChannel);
