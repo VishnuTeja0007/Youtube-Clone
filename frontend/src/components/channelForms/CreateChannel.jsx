@@ -11,6 +11,7 @@ const CreateChannel = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
+
   const [formData, setFormData] = useState({
     channelName: '', description: '', channelBanner: '', uniqueDeleteKey: ''
   });
@@ -20,6 +21,9 @@ const CreateChannel = () => {
     const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
+
+  // Send a POST request to create the new channel with the provided form data
+
     try {
       const res = await axios.post('http://localhost:3000/api/channels', formData,getAuthHeader(), { withCredentials: true });
       // Update user context to include the new channel ID
@@ -34,7 +38,9 @@ const CreateChannel = () => {
   };
 
   return (
+
     <div className="bg-yt-bg min-h-screen p-4 xxs:p-8">
+      {/* Show feedback to the user via toast notifications */}
       {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       <div className="max-w-2xl mx-auto space-y-8">
         <h2 className="text-2xl font-bold flex items-center gap-2"><Layout className="text-yt-primary"/> Start Your Journey</h2>
@@ -47,7 +53,7 @@ const CreateChannel = () => {
             <div className="w-full h-full flex items-center justify-center text-yt-muted text-xs uppercase font-bold">Banner Preview</div>
           )}
         </div>
-
+          {/* Form for entering channel details and security key */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input 
             placeholder="Channel Name*" 

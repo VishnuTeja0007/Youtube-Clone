@@ -7,14 +7,16 @@ import { updateUser } from '../../store/authSlice';
  const SecureDeleteChannel = ({ channelId, onClose }) => {
   const [key, setKey] = useState('');
   const [loading, setLoading] = useState(false);
+  // Retrieve the current user's information from the global state
   const user = useSelector(state => state.auth.user);
+  // Hook to dispatch actions to the Redux store
   const dispatch = useDispatch();
 
-  console.log(channelId)
 
 
   const handleDelete = async () => {
     setLoading(true);
+    // Execute the delete request with the security key for verification
     try {
       await axios.delete(`http://localhost:3000/api/channels/${channelId}`,
       
