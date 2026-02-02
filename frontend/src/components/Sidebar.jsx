@@ -22,7 +22,7 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
   const [showAllSubs, setShowAllSubs] = useState(false);
 
   const subscriptions =user?.subscribedChannels 
-
+console.log(user)
   const visibleSubs = showAllSubs ? subscriptions : subscriptions?.slice(0, 6);
 
   const youItems = [

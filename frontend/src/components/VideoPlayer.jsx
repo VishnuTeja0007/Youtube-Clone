@@ -90,7 +90,7 @@ const VideoPlayer = ({ src }) => {
             </button>
 
             {/* Volume Section */}
-            <div className="flex items-center gap-2 group/volume">
+            <div className="flex items-center gap-5 group/volume">
               <button onClick={toggleMute} className="hover:scale-110 transition-transform">
                 {isMuted || volume === 0 ? <VolumeX size={22} /> : <Volume2 size={22} />}
               </button>

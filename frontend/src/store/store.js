@@ -10,7 +10,6 @@ export const store = configureStore({
   // Combine all reducers to handle different parts of the state
   reducer: {
     auth: authReducer, // Authentication state management
-    // Add other reducers here as the application grows
     // videos: videoReducer,
     // ui: uiReducer,
   },

@@ -15,6 +15,8 @@ const ChannelProfile = lazy(() => import('./components/Channel.jsx'));
 const ChannelList = lazy(() => import('./components/ChannelList.jsx'));
 const Login = lazy(() => import('./pages/Login.jsx'));
 const Register = lazy(() => import('./pages/Register.jsx'));
+const ErrorPage = lazy(() => import('./components/Error.jsx'));
+const RouteErrorBoundary = lazy(() => import('./components/RouteErrorBoundary.jsx'));
 
 // Import studio components for content management
 import CreateVideo from './components/videoForms/UploadVideo.jsx'
@@ -31,6 +33,13 @@ const appRouter = createBrowserRouter([
         // Main application layout with header and sidebar
         path: "/",
         element: <App />,
+        errorElement: (
+            <Provider store={store}>
+                <Suspense fallback={<Loading variant="spinner" size="full" text="Loading..." />}>
+                    <RouteErrorBoundary />
+                </Suspense>
+            </Provider>
+        ),
         children: [
             {
                 // Home page - main video feed
@@ -106,6 +115,13 @@ const appRouter = createBrowserRouter([
                     <Login />
                 </Suspense>
             </Provider>
+        ),
+        errorElement: (
+            <Provider store={store}>
+                <Suspense fallback={<Loading variant="spinner" size="full" text="Loading..." />}>
+                    <RouteErrorBoundary />
+                </Suspense>
+            </Provider>
         )
     }, {
         path: "/register",
@@ -113,6 +129,33 @@ const appRouter = createBrowserRouter([
             <Provider store={store}>
                 <Suspense fallback={<Loading variant="spinner" size="full" text="Loading Register..." />}>
                     <Register />
+                </Suspense>
+            </Provider>
+        ),
+        errorElement: (
+            <Provider store={store}>
+                <Suspense fallback={<Loading variant="spinner" size="full" text="Loading..." />}>
+                    <RouteErrorBoundary />
+                </Suspense>
+            </Provider>
+        )
+    }, {
+        // Dedicated error route for manual error navigation
+        path: "/error",
+        element: (
+            <Provider store={store}>
+                <Suspense fallback={<Loading variant="spinner" size="full" text="Loading..." />}>
+                    <ErrorPage />
+                </Suspense>
+            </Provider>
+        )
+    }, {
+        // Catch-all route for 404 errors
+        path: "*",
+        element: (
+            <Provider store={store}>
+                <Suspense fallback={<Loading variant="spinner" size="full" text="Loading..." />}>
+                    <ErrorPage status="404" title="Page Not Found" message="The page you are looking for does not exist or has been moved." />
                 </Suspense>
             </Provider>
         )

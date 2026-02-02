@@ -5,6 +5,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import SecureDeleteChannel from './channelForms/DeleteChannel';
 import Loading from './Loading';
+import ErrorPage from './Error';
 
 const ChannelProfile = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -60,7 +61,7 @@ const ChannelProfile = () => {
   }, [activeMenu]);
 
   if (loading) return <Loading variant="spinner" size="full" text="Loading Channel..." />;
-  if (!data) return <div className="bg-yt-bg text-yt-text p-10 h-screen">Channel not found.</div>;
+  if (!data) return <ErrorPage status="404" title="Channel Not Found" message="The channel you are looking for does not exist or has been removed." />;
 
   const { channel, videos } = data;
   const isOwner = user?.id === channel.owner._id;

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Edit3, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateUser } from '../../store/authSlice';
 import Toast from '../Toaster';
 
 const UpdateChannel = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [toast, setToast] = useState(null);
 
   // Extract channel data passed from the ChannelProfile state
@@ -42,6 +44,13 @@ const UpdateChannel = () => {
         formData, 
         getAuthHeader()
       );
+
+      // Fetch updated user data to sync Redux state
+      const { data: updatedUser } = await axios.get(
+        'http://localhost:3000/api/auth/me',
+        getAuthHeader()
+      );
+      dispatch(updateUser(updatedUser));
       
       setToast({ title: "Updated", message: "Channel details refreshed successfully!" });
       

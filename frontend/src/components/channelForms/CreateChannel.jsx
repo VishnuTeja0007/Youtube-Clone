@@ -28,10 +28,11 @@ const CreateChannel = () => {
       const res = await axios.post('http://localhost:3000/api/channels', formData,getAuthHeader(), { withCredentials: true });
       // Update user context to include the new channel ID
       if (user) {
+        console.log(res.data._id)
         dispatch(updateUser({ channel: res.data._id }));
       }
       setToast({ title: "Success", message: "Channel created! Redirecting..." });
-      setTimeout(() => navigate('/channels'), 1500);
+      setTimeout(() => navigate('/channel'), 1500);
     } catch (err) {
       setToast({ title: "Error", message: err.response?.data?.message || "Creation failed" });
     }
@@ -43,7 +44,7 @@ const CreateChannel = () => {
       {/* Show feedback to the user via toast notifications */}
       {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       <div className="max-w-2xl mx-auto space-y-8">
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Layout className="text-yt-primary"/> Start Your Journey</h2>
+        <h2 className="text-2xl font-bold text-yt-text flex items-center gap-2"><Layout className="text-yt-primary"/> Start Your Journey</h2>
         
         {/* Banner Preview */}
         <div className="w-full h-32 xxs:h-48 bg-yt-surface rounded-2xl overflow-hidden border border-yt-border">

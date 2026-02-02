@@ -48,6 +48,13 @@ const UpdateVideo = () => {
         formData, 
         getAuthHeader()
       );
+
+      // Fetch updated user data to sync Redux state
+      const { data: updatedUser } = await axios.get(
+        'http://localhost:3000/api/auth/me',
+        getAuthHeader()
+      );
+      dispatch(updateUser(updatedUser));
       
       setToast({ title: "Updated", message: "Video updated successfully!" });
       

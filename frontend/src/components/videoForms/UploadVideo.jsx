@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Film, ArrowLeft } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { updateUser } from '../../store/authSlice';
 import Toast from '../Toaster'; 
 
 const CreateVideo = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     title: '', description: '', videoUrl: '', thumbnailUrl: '', category: ''
   });
@@ -25,6 +28,14 @@ const CreateVideo = () => {
 
     try {
       await axios.post('http://localhost:3000/api/videos', formData, getAuthHeader());
+
+      // Fetch updated user data to sync Redux state
+      const { data: updatedUser } = await axios.get(
+        'http://localhost:3000/api/auth/me',
+        getAuthHeader()
+      );
+      dispatch(updateUser(updatedUser));
+
       setToast({ title: "Success", message: "Video published! Redirecting..." });
       
       setTimeout(() => navigate(-1), 1500);
