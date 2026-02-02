@@ -11,7 +11,16 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
 
-  const categories = ["All", "Education", "Travel", "Vlog", "LIVE"];
+  const categories = [
+    "All",  
+    "Gaming", 
+    "Education", 
+    "Technology", 
+    "Travel", 
+    "Vlog", 
+    "News", 
+  
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
