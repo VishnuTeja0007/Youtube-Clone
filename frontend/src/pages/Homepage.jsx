@@ -3,9 +3,12 @@ import axios from 'axios';
 import VideoGrid from '../components/VideoGrid';
 import { useOutletContext } from 'react-router-dom';
 import { useCookies } from 'react-cookie'
+import Loading from '../components/Loading';
+
 const HomePage = () => {
   const { searchTerm = "" } = useOutletContext();
   const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
 
   const categories = ["All", "Education", "Travel", "Vlog", "LIVE"];
@@ -27,6 +30,8 @@ const HomePage = () => {
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
       } catch (error) {
         console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -42,6 +47,11 @@ const HomePage = () => {
       return matchesCategory && matchesQuery;
     });
   }, [videos, activeCategory, searchTerm]);
+
+  if (loading && videos.length === 0) {
+    return <Loading variant="skeleton" type="video" />;
+  }
+
   return (
     <div className="min-h-screen bg-yt-bg transition-colors duration-300">
       

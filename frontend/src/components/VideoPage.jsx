@@ -7,6 +7,7 @@ import {
 import VideoPlayer from './VideoPlayer';
 import { useAuth } from '../contexts/userContext';
 import CommentSection from './CommentSection';
+import Loading from './Loading';
 
 const VideoPage = () => {
   const { user, setUser } = useAuth();
@@ -138,11 +139,7 @@ const VideoPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-[80vh]">
-        <div className="animate-pulse text-yt-muted font-medium">Loading video...</div>
-      </div>
-    );
+    return <Loading variant="spinner" size="lg" text="Loading video..." />;
   }
 
   if (!video) return <div className="p-10 text-center text-yt-text">Video not found.</div>;

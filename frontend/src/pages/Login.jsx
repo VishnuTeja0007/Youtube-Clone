@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import Toast from '../components/Toaster';
+import Toast from '../components/SuccessToast';
 /**
  * Login Component
  * Provides a professional YouTube-style login interface.
@@ -83,6 +83,7 @@ const Login = () => {
                 {toastError && (
                     <div className='flex flex-col gap-3 items-center justify-center'>
                         <Toast
+                            type="error"
                             message={toastError}
                             onClose={() => setToastError(null)}
                         />

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import Loading from "../components/Loading";
 
 const UserContext = createContext();
 
@@ -46,7 +47,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen bg-yt-bg text-yt-text">Loading...</div>;
+    return <div className="mt-[25vh]">
+      <Loading/>
+      </div>
   }
 
   return (
