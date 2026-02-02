@@ -1,9 +1,10 @@
 import { Outlet } from "react-router-dom";
 import Header from "./components/Header";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
 import { AuthProvider } from "./contexts/userContext";
 import  YouTubeSidebar  from "./components/Sidebar";
+import Loading from "./components/Loading";
 
 
 function App() {
@@ -33,7 +34,9 @@ function App() {
           flex-1 transition-all overflow-y-auto duration-300 ease-in-out bg-yt-surface
           ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}
         `}>
-          <Outlet context={{ searchTerm }}/>
+          <Suspense fallback={<Loading variant="spinner" size="lg" text="Loading..." />}>
+            <Outlet context={{ searchTerm }}/>
+          </Suspense>
         </main>
       </div>
     </div>

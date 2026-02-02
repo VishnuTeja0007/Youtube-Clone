@@ -4,6 +4,7 @@ import { PlusCircle, MoreVertical, Edit2, Trash2, Video as VideoIcon } from 'luc
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/userContext';
 import SecureDeleteChannel from './channelForms/DeleteChannel';
+import Loading from './Loading';
 
 const ChannelProfile = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -58,7 +59,7 @@ const ChannelProfile = () => {
     }
   }, [activeMenu]);
 
-  if (loading) return <div className="bg-yt-bg text-yt-text p-10 h-screen">Loading...</div>;
+  if (loading) return <Loading variant="spinner" size="full" text="Loading Channel..." />;
   if (!data) return <div className="bg-yt-bg text-yt-text p-10 h-screen">Channel not found.</div>;
 
   const { channel, videos } = data;

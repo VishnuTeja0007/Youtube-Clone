@@ -87,7 +87,7 @@ export default function YouTubeSidebar({ isOpen, onClose }) {
           <div className="space-y-0.5 animate-slide-in" style={{ animationDelay: '150ms' }}>
             {user && (
               <Link
-                to={`/channel/${user.channel._id}`}
+                to={`/channel/${user?.channel?._id}`}
                 className="flex items-center gap-5 px-3 py-2 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text"
               >
                 <UserCircle size={22} strokeWidth={2} />

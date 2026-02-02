@@ -1,15 +1,19 @@
-import { StrictMode } from 'react'
+import { StrictMode, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Login from './pages/Login.jsx'
-import Register from './pages/Register.jsx'
 import { AuthProvider } from './contexts/userContext.jsx'
-import HomePage from './pages/Homepage.jsx'
-import Videos from './pages/Videos.jsx'
-import ChannelProfile from './components/Channel.jsx'
-import ChannelList from './components/ChannelList.jsx'
+import Loading from './components/Loading.jsx'
+
+// Lazy load page components for better performance
+const HomePage = lazy(() => import('./pages/Homepage.jsx'));
+const Videos = lazy(() => import('./pages/Videos.jsx'));
+const ChannelProfile = lazy(() => import('./components/Channel.jsx'));
+const ChannelList = lazy(() => import('./components/ChannelList.jsx'));
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Register = lazy(() => import('./pages/Register.jsx'));
+
 import CreateVideo from './components/videoForms/UploadVideo.jsx'
 import UpdateVideo from './components/videoForms/UpdateVideo.jsx'
 import CreateChannel from './components/channelForms/CreateChannel.jsx'
@@ -76,10 +80,22 @@ const appRouter = createBrowserRouter([
 
     {
         path: "/login",
-        element: <AuthProvider><Login /></AuthProvider>
+        element: (
+            <AuthProvider>
+                <Suspense fallback={<Loading variant="spinner" size="full" text="Loading Login..." />}>
+                    <Login />
+                </Suspense>
+            </AuthProvider>
+        )
     }, {
         path: "/register",
-        element: <AuthProvider><Register /></AuthProvider>
+        element: (
+            <AuthProvider>
+                <Suspense fallback={<Loading variant="spinner" size="full" text="Loading Register..." />}>
+                    <Register />
+                </Suspense>
+            </AuthProvider>
+        )
     }
 ])
 

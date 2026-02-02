@@ -3,6 +3,7 @@ import axios from 'axios';
 import { CheckCircle, Settings, Users } from 'lucide-react';
 import { useAuth } from '../contexts/userContext';
 import { useNavigate } from 'react-router-dom';
+import Loading from './Loading';
 
 const ChannelList = () => {
   const [channels, setChannels] = useState([]);
@@ -29,11 +30,7 @@ const ChannelList = () => {
   };
 
   if (loading) {
-    return (
-      <div className="bg-yt-bg text-yt-text p-10 h-screen flex items-center justify-center">
-        <div className="animate-pulse text-yt-muted font-medium">Loading Channels...</div>
-      </div>
-    );
+    return <Loading variant="skeleton" type="channel" />;
   }
 
   if (channels.length === 0) {

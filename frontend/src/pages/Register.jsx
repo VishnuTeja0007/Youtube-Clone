@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import Toast from '../components/Toaster';
+import Toast from '../components/SuccessToast';
 /**
  * Register Component
  * * Provides a responsive user registration form for the YouTube Clone.
@@ -92,6 +92,7 @@ const Register = () => {
                 {toastError && (
                     <div className='flex flex-col gap-3 items-center justify-center'>
                         <Toast
+                            type="error"
                             title={toastError?.title}
                             message={toastError?.msg}
                             onClose={() => setToastError(null)}
