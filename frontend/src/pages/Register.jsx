@@ -57,7 +57,7 @@ const Register = () => {
             return;
         }
         try {
-            const response = await axios.post("http://localhost:3000/api/auth/register", formData);
+            await axios.post("http://localhost:3000/api/auth/register", formData);
             navigate('/login');
             // return response.data
 

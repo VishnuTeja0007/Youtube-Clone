@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import axios from 'axios';
 import Toast from '../components/SuccessToast';
+import { setAuth } from '../store/authSlice';
 /**
  * Login Component
  * Provides a professional YouTube-style login interface.
  * Implements JWT-based authentication flow.
  */
-import { useAuth } from "../contexts/userContext";
 
 const Login = () => {
-    const { login } = useAuth();
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const validateLogin = () => {
@@ -57,7 +58,7 @@ const Login = () => {
             const response = await axios.post('http://localhost:3000/api/auth/login', formData);
 
             console.log('User logged in successfully');
-            login(response.data.user, response.data.token);
+            dispatch(setAuth({ user: response.data.user, token: response.data.token }));
 
             // Redirect to home page after successful login [Requirement 2.62]
             navigate('/');

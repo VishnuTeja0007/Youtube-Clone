@@ -1,6 +1,6 @@
 import  { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/userContext';
+import { useSelector } from 'react-redux';
 import { 
   Home, 
   Clock,  
@@ -18,7 +18,7 @@ import {
 
 
 export default function YouTubeSidebar({ isOpen, onClose }) {
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const [showAllSubs, setShowAllSubs] = useState(false);
 
   const subscriptions =user?.subscribedChannels 

@@ -37,7 +37,24 @@ async function toggleSubscibeController(req, res) {
             id, 
             update, 
             { new: true }
-        );
+        ).populate({
+            path: "likedVideos",
+            populate: { path: "channel uploader", select: "channelName username avatar" },
+        })
+        .populate({
+            path: "dislikedVideos",
+            populate: { path: "channel uploader", select: "channelName username avatar" },
+        })
+        .populate("channel")
+        .populate("subscribedChannels")
+        .populate({
+            path: "watchLater",
+            populate: { path: "channel uploader", select: "channelName username avatar" },
+        })
+        .populate({
+            path: "watchHistory.video",
+            populate: { path: "channel uploader", select: "channelName username avatar" },
+        });
 
         res.status(200).json({ 
             message: statusMessage, 

@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
 import { 
   ThumbsUp, ThumbsDown, Clock, UserCircle
 } from 'lucide-react';
 import VideoPlayer from './VideoPlayer';
-import { useAuth } from '../contexts/userContext';
+import { updateUser } from '../store/authSlice';
 import CommentSection from './CommentSection';
 import Loading from './Loading';
 
 const VideoPage = () => {
-  const { user, setUser } = useAuth();
+  const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
   const { id } = useParams();
   const navigate = useNavigate();
   const [video, setVideo] = useState(null);
@@ -34,7 +36,7 @@ const VideoPage = () => {
             { videoId: id }, 
             getAuthHeader()
           );
-          if (historyRes.data.user) setUser(prev => ({ ...prev, ...historyRes.data.user }));
+          if (historyRes.data.user) dispatch(updateUser(historyRes.data.user));
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -62,7 +64,7 @@ const VideoPage = () => {
       );
       
       // Update User Context
-      setUser(prev => ({ ...prev, ...res.data.user }));
+      dispatch(updateUser(res.data.user));
 
       // Update Local Video State
       setVideo(prev => {
@@ -85,7 +87,7 @@ const VideoPage = () => {
         { videoId: video._id },
         getAuthHeader()
       );
-      setUser(prev => ({ ...prev, ...res.data.user }));
+      dispatch(updateUser(res.data.user));
       
       // If was liked, decrease like count in UI
       if (isLiked) {
@@ -106,7 +108,7 @@ const VideoPage = () => {
         { channelId: video.channel._id },
         getAuthHeader()
       );
-      setUser(prev => ({ ...prev, ...res.data.user }));
+      dispatch(updateUser(res.data.user));
       
       // Update local subscriber count
       setVideo(prev => ({
@@ -132,7 +134,7 @@ const VideoPage = () => {
         { videoId: video._id },
         getAuthHeader()
       );
-      setUser(prev => ({ ...prev, ...res.data.user }));
+      dispatch(updateUser(res.data.user));
     } catch (err) {
       console.error("Watch Later error:", err?.message);
     }

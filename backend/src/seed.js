@@ -62,7 +62,13 @@ const seedDatabase = async () => {
       await user.save();
     }
     console.log("✅ Created 5 Channels (1 per user).");
-
+    let categories=[ "Music", 
+    "Gaming", 
+    "Education", 
+    "Technology", 
+    "Travel", 
+    "Vlog", 
+    "News"]
     // 4. Create 30 Videos (6 per Channel)
     for (let i = 0; i < 5; i++) {
       const channel = channels[i];
@@ -74,7 +80,7 @@ const seedDatabase = async () => {
           description: `This is video number ${j} uploaded by ${uploader.username} on ${channel.channelName}.`,
           videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", // Placeholder video
           thumbnailUrl: `https://picsum.photos/seed/video_${i}_${j}/640/360`,
-          category: j % 2 === 0 ? "Technology" : "Vlog",
+          category: categories[j % categories.length],
           views: Math.floor(Math.random() * 5000),
           likes: Math.floor(Math.random() * 500),
           dislikes: Math.floor(Math.random() * 50),

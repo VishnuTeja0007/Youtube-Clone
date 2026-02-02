@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { PlusCircle, MoreVertical, Edit2, Trash2, Video as VideoIcon } from 'lucide-react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/userContext';
+import { useSelector } from 'react-redux';
 import SecureDeleteChannel from './channelForms/DeleteChannel';
 import Loading from './Loading';
 
@@ -13,7 +13,7 @@ const ChannelProfile = () => {
   const [activeMenu, setActiveMenu] = useState(null); // Track which video menu is open
   
   const { channelId } = useParams();
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const navigate = useNavigate();
 
   useEffect(() => {

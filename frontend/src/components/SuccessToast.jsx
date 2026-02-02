@@ -256,9 +256,9 @@ const Toast = ({
                   'var(--color-info)', 
                   'var(--color-yt-primary)'
                 ][i % 5],
-                left: `${Math.random() * 300}px`,
-                animationDelay: `${Math.random() * 0.5}s`,
-                animationDuration: `${1 + Math.random()}s`
+                left: `${confettiConfig[i].left}px`,
+                animationDelay: `${confettiConfig[i].delay}s`,
+                animationDuration: `${confettiConfig[i].duration}s`
               }}
             />
           ))}

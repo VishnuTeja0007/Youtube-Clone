@@ -1,9 +1,11 @@
 import React from 'react';
-import { Eye, ThumbsUp, ThumbsDown, Play, MoreVertical, UserCircle } from 'lucide-react';
+import { Eye, ThumbsUp, ThumbsDown, Play, MoreVertical, UserCircle, Search } from 'lucide-react';
 import Toast from './Toaster';
-import { Link } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+
 const VideoGrid = ({ videos = [], className = '' }) => {
+  const navigate = useNavigate();
+
   if (!videos.length) {
     return (
 <div className="flex h-full w-full flex-col items-center justify-center bg-transparent p-6 text-center">
@@ -75,13 +77,11 @@ const VideoCard = ({ video, index }) => {
     views, 
     likes, 
     dislikes, 
-    videoUrl, 
     channel,  // Populated from Channel Model
     uploader  // Populated from User Model
   } = video;
 
   const animationDelay = `${index * 50}ms`;
-  console.log(video)
   return (
     <div 
       className="group animate-slide-up flex flex-col bg-yt-bg border border-yt-border transition-all duration-300 hover:shadow-xl hover:z-10"

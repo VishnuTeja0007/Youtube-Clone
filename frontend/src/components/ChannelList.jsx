@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CheckCircle, Settings, Users } from 'lucide-react';
-import { useAuth } from '../contexts/userContext';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Loading from './Loading';
 
 const ChannelList = () => {
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const user = useSelector(state => state.auth.user);
   const navigate = useNavigate();
 
   useEffect(() => {

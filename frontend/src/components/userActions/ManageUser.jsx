@@ -5,10 +5,12 @@ import {
   History, ThumbsUp, ThumbsDown, Clock, 
   Users, PlaySquare, Home, ChevronRight, Trash2
 } from 'lucide-react';
-import { useAuth } from '../../contexts/userContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearAuth, updateUser } from '../../store/authSlice';
 
 const UserLibrary = () => {
-  const { user, logout, setUser } = useAuth();
+  const user = useSelector(state => state.auth.user);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('History');
 
@@ -20,7 +22,7 @@ const UserLibrary = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-        logout();
+        dispatch(clearAuth());
         navigate('/register');
       } catch (err) {
         console.error("Delete account error:", err);
@@ -45,7 +47,7 @@ const UserLibrary = () => {
         data: { videoId } // Send videoId in body for DELETE request
       });
       if (res.data.user) {
-        setUser(res.data.user);
+        dispatch(updateUser(res.data.user));
       }
     } catch (err) {
       console.error("Error removing item:", err);
@@ -95,7 +97,7 @@ const UserLibrary = () => {
                <button onClick={() => navigate("/studio/updateProfile")} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">
                  Customize Profile
                </button>
-               <button onClick={() => { logout(); navigate('/'); }} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">
+               <button onClick={() => { dispatch(clearAuth()); navigate('/'); }} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">
                  Sign Out
                </button>
                <button onClick={handleDeleteAccount} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">

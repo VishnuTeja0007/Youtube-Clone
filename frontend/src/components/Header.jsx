@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/userContext';
+import { useSelector, useDispatch } from 'react-redux';
 import { 
   LogOut, Search, Sun, Moon, Settings, 
   UserPen, MonitorPlay, ChevronLeft 
 } from 'lucide-react';
+import { clearAuth } from '../store/authSlice';
 
 const Header = ({ onMenuClick, searchTerm, setSearchTerm }) => {
   const [isSearchClicked, setSearchClicked] = useState(false);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   const handleChange = (e) => setSearchTerm(e.target.value);
@@ -128,7 +130,7 @@ const Header = ({ onMenuClick, searchTerm, setSearchTerm }) => {
                 />
 
                 <button 
-                  onClick={logout}
+                  onClick={() => dispatch(clearAuth())}
                   className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-500/10 transition-colors"
                 >
                   <LogOut size={18} /> Sign out

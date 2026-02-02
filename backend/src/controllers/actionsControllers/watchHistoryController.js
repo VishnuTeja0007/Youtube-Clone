@@ -36,9 +36,31 @@ async function setWatchHistory(req, res) {
             await videoModel.findByIdAndUpdate(videoId, { $inc: { views: 1 } });
         }
 
+        // Fetch full user data to return
+        const fullUser = await userModel.findById(id)
+            .populate({
+                path: "likedVideos",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            })
+            .populate({
+                path: "dislikedVideos",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            })
+            .populate("channel")
+            .populate("subscribedChannels")
+            .populate({
+                path: "watchLater",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            })
+            .populate({
+                path: "watchHistory.video",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            });
+
         res.status(200).json({
             message: "Watch history updated successfully",
-            watchHistory: user.watchHistory
+            watchHistory: fullUser.watchHistory,
+            user: fullUser // Also return the full user for state updates if needed
         });
 
     } catch (error) {

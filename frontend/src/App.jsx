@@ -1,8 +1,10 @@
 import { Outlet } from "react-router-dom";
 import Header from "./components/Header";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { setAuth, clearAuth, setLoading } from "./store/authSlice";
 
-import { AuthProvider } from "./contexts/userContext";
 import  YouTubeSidebar  from "./components/Sidebar";
 import Loading from "./components/Loading";
 
@@ -11,11 +13,42 @@ function App() {
   
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        dispatch(setLoading(false));
+        return;
+      }
+
+      try {
+        const res = await axios.get("http://localhost:3000/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        dispatch(setAuth({ user: res.data, token }));
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+        dispatch(clearAuth());
+      }
+    };
+
+    initAuth();
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className="mt-[25vh]">
+        <Loading variant="spinner" size="lg" text="Initializing..." />
+      </div>
+    );
+  }
+
   return (
-    <AuthProvider>
-    {/* bg-yt-bg automatically handles Light/Dark based on the <html> class */}
     <div className=" bg-yt-bg transition-colors duration-300">
       
       {/* 1. Header: Pass the toggle function */}
@@ -40,7 +73,6 @@ function App() {
         </main>
       </div>
     </div>
-    </AuthProvider>
   );
 }
 

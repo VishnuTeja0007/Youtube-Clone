@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { AlertTriangle, X } from 'lucide-react';
-import { useAuth } from '../../contexts/userContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateUser } from '../../store/authSlice';
 
  const SecureDeleteChannel = ({ channelId, onClose }) => {
   const [key, setKey] = useState('');
   const [loading, setLoading] = useState(false);
-  const { user, setUser } = useAuth();
+  const user = useSelector(state => state.auth.user);
+  const dispatch = useDispatch();
 
   console.log(channelId)
 
 
   const handleDelete = async () => {
-    const getAuthHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
     setLoading(true);
     try {
       await axios.delete(`http://localhost:3000/api/channels/${channelId}`,
@@ -30,7 +29,7 @@ import { useAuth } from '../../contexts/userContext';
        );
       // Update local user context to remove channel reference before redirecting
       if (user) {
-        setUser(prev => ({ ...prev, channel: null }));
+        dispatch(updateUser({ channel: null }));
       }
       window.location.href = '/'; // Redirect to home after total deletion
     } catch (err) {

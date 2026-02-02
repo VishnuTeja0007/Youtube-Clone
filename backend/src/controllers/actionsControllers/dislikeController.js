@@ -22,7 +22,25 @@ async function toggleDislikeController(req, res) {
             };
         }
 
-        const updatedUser = await userModel.findByIdAndUpdate(id, update, { new: true });
+        const updatedUser = await userModel.findByIdAndUpdate(id, update, { new: true })
+            .populate({
+                path: "likedVideos",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            })
+            .populate({
+                path: "dislikedVideos",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            })
+            .populate("channel")
+            .populate("subscribedChannels")
+            .populate({
+                path: "watchLater",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            })
+            .populate({
+                path: "watchHistory.video",
+                populate: { path: "channel uploader", select: "channelName username avatar" },
+            });
         
         // Update video likes/dislikes count
         let videoUpdate;

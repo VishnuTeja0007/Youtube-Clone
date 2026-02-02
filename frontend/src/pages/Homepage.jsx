@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import VideoGrid from '../components/VideoGrid';
 import { useOutletContext } from 'react-router-dom';
-import { useCookies } from 'react-cookie'
 import Loading from '../components/Loading';
 
 const HomePage = () => {

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { UserPen, Mail, AtSign, ArrowLeft, Image as ImageIcon } from 'lucide-react';
-import { useAuth } from '../../contexts/userContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateUser } from '../../store/authSlice';
 import Toast from '../Toaster';
 
 const UpdateProfile = () => {
-  const { user, setUser } = useAuth();
+  const user = useSelector(state => state.auth.user);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
 
@@ -33,7 +35,7 @@ const UpdateProfile = () => {
       setToast({ title: "Success", message: "Profile updated successfully!" });
       
       // Update global context so the header avatar changes immediately
-      if (setUser) setUser(res.data.user); 
+      dispatch(updateUser(res.data.user)); 
 
       setTimeout(() => navigate(-1), 1500);
     } catch (err) {

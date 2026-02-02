@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { AuthProvider } from './contexts/userContext.jsx'
+import { Provider } from 'react-redux';
+import { store } from './store/store';
 import Loading from './components/Loading.jsx'
 
 // Lazy load page components for better performance
@@ -81,24 +82,26 @@ const appRouter = createBrowserRouter([
     {
         path: "/login",
         element: (
-            <AuthProvider>
+            <Provider store={store}>
                 <Suspense fallback={<Loading variant="spinner" size="full" text="Loading Login..." />}>
                     <Login />
                 </Suspense>
-            </AuthProvider>
+            </Provider>
         )
     }, {
         path: "/register",
         element: (
-            <AuthProvider>
+            <Provider store={store}>
                 <Suspense fallback={<Loading variant="spinner" size="full" text="Loading Register..." />}>
                     <Register />
                 </Suspense>
-            </AuthProvider>
+            </Provider>
         )
     }
 ])
 
 createRoot(document.getElementById('root')).render(
-    <RouterProvider router={appRouter} />
+    <Provider store={store}>
+        <RouterProvider router={appRouter} />
+    </Provider>
 )
