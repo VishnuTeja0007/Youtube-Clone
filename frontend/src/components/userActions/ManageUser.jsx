@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearAuth, updateUser } from '../../store/authSlice';
-import useFetch from '../hooks/useFetch'; // Assuming your hook path
+import useFetch from '../../hooks/useFetch'; // Assuming your hook path
 
 const UserLibrary = () => {
   const user = useSelector(state => state.auth.user);

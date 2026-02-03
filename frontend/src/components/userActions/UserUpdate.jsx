@@ -4,7 +4,7 @@ import { UserPen, Mail, AtSign, ArrowLeft, Image as ImageIcon } from 'lucide-rea
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
 import Toast from '../SuccessToast';
-import useFetch from '../hooks/useFetch'; // Assuming your hook path
+import useFetch from '../../hooks/useFetch'; // Assuming your hook path
 
 const UpdateProfile = () => {
   const user = useSelector(state => state.auth.user);

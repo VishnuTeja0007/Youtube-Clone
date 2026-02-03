@@ -4,7 +4,7 @@ import { Upload, Film, ArrowLeft } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
 import Toast from '../Toaster'; 
-import useFetch from '../hooks/useFetch'; // Import your custom hook
+import useFetch from '../../hooks/useFetch'; // Import your custom hook
 
 const CreateVideo = () => {
   const navigate = useNavigate();

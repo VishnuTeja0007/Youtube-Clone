@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
 import Toast from '../SuccessToast';
 import { Edit3, ArrowLeft, Image as ImageIcon } from 'lucide-react';
-import useFetch from '../hooks/useFetch'; // Assuming your hook path
+import useFetch from '../../hooks/useFetch'; // Assuming your hook path
 
 const UpdateChannel = () => {
   const location = useLocation();

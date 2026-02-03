@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
-import useFetch from '../hooks/useFetch'; // Assuming your hook path
+import useFetch from '../../hooks/useFetch'; // Assuming your hook path
 
 const SecureDeleteChannel = ({ channelId, onClose }) => {
   const [key, setKey] = useState('');

@@ -4,7 +4,7 @@ import { Edit3, ArrowLeft, Film } from 'lucide-react';
 import Toast from '../SuccessToast';
 import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
-import useFetch from '../hooks/useFetch'; // Assuming your hook path
+import useFetch from '../../hooks/useFetch'; // Assuming your hook path
 
 const UpdateVideo = () => {
   const location = useLocation();
