@@ -1,14 +1,38 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import axios from 'axios';
 import VideoGrid from '../components/VideoGrid';
 import { useOutletContext } from 'react-router-dom';
 import Loading from '../components/Loading';
+import useFetch from '../hooks/useFetch';
 
 const HomePage = () => {
   const { searchTerm = "" } = useOutletContext();
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
+
+  const { data: fetchedVideos, loading: fetchLoading } = useFetch('/api/videos');
+
+  useEffect(() => {
+    if (fetchedVideos) {
+      setVideos(fetchedVideos);
+      localStorage.setItem('yt_videos_cache', JSON.stringify(fetchedVideos));
+      setLoading(false);
+    } else if (!fetchLoading) {
+       // Finished loading but no data? (Maybe error or empty)
+       // Or check cache if fetchLoading is true?
+       // Actually, useFetch initializes loading=true.
+       // If we have cache, we can show it while fetching.
+    }
+    
+    // Check cache on mount if loading
+    if (fetchLoading) {
+      const cached = localStorage.getItem('yt_videos_cache');
+      if (cached) {
+         setVideos(JSON.parse(cached));
+         setLoading(false); // Optimistic load
+      }
+    }
+  }, [fetchedVideos, fetchLoading]);
 
   const categories = [
     "All",  
@@ -20,31 +44,6 @@ const HomePage = () => {
     "News", 
   
   ];
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const CACHE_KEY = 'yt_videos_cache';
-      const cachedData = localStorage.getItem(CACHE_KEY);
-
-      if (cachedData) {
-        setVideos(JSON.parse(cachedData));
-        // Optional: Trigger a background fetch to update the cache silently
-      }
-
-      try {
-        const { data } = await axios.get('http://localhost:3000/api/videos');
-        setVideos(data);
-        // Save to localStorage (must stringify objects)
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-      } catch (error) {
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const filteredVideos = useMemo(() => {
     const lowerSearch = searchTerm.toLowerCase();

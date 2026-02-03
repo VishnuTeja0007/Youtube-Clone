@@ -23,7 +23,7 @@ const CreateVideo = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.videoUrl || !formData.thumbnailUrl) {
-      return setToast({ title: "Validation Error", message: "Missing required fields." });
+      return setToast({ type:"error" ,title: "Validation Error", message: "Missing required fields." });
     }
 
     try {
@@ -36,17 +36,17 @@ const CreateVideo = () => {
       );
       dispatch(updateUser(updatedUser));
 
-      setToast({ title: "Success", message: "Video published! Redirecting..." });
+      setToast({ type:"error",title: "Success", message: "Video published! Redirecting..." });
       
       setTimeout(() => navigate(-1), 1500);
     } catch (err) {
-      setToast({ title: "Error", message: err.response?.data?.message || "Failed to upload." });
+      setToast({ type:"error",title: "Error", message: err.response?.data?.message || "Failed to upload." });
     }
   };
 
   return (
     <div className="bg-yt-bg min-h-screen p-3 sm:p-6 transition-colors duration-300">
-      {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
+      {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}

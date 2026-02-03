@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, ThumbsUp, ThumbsDown, Play, MoreVertical, UserCircle, Search } from 'lucide-react';
-import Toast from './Toaster';
+
 import { Link, useNavigate } from 'react-router-dom';
 
 const VideoGrid = ({ videos = [], className = '' }) => {

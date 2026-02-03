@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import SecureDeleteChannel from './channelForms/DeleteChannel';
 import Loading from './Loading';
 import ErrorPage from './Error';
+import useFetch from '../hooks/useFetch';
 
 const ChannelProfile = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -17,19 +18,16 @@ const ChannelProfile = () => {
   const user = useSelector(state => state.auth.user);
   const navigate = useNavigate();
 
+  const { data: fetchedChannel, loading: channelLoading } = useFetch(`/api/channels/${channelId}`);
+
   useEffect(() => {
-    const fetchChannelData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/api/channels/${channelId}`);
-        setData(response.data);
-      } catch (err) {
-        console.error("Error loading channel", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchChannelData();
-  }, [channelId]);
+    if (fetchedChannel) {
+      setData(fetchedChannel);
+      setLoading(false);
+    } else if (channelLoading) {
+      setLoading(true);
+    }
+  }, [fetchedChannel, channelLoading]);
 
   const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

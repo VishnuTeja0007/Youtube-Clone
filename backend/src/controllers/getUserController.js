@@ -33,6 +33,11 @@ const getUserController = async (req, res) => {
     const userData = user.toObject();
     userData.id = user._id;
 
+    // Set cache control headers to prevent 304 responses
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
     res.status(200).json(userData);
   } catch (error) {
     console.error("Error fetching user profile:", error);

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Edit3, ArrowLeft, Film } from 'lucide-react';
-import Toast from '../Toaster';
-
+import Toast from '../SuccessToast';
+import { useDispatch } from 'react-redux';
+import { updateUser } from '../../store/authSlice';
 const UpdateVideo = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
+  const dispatch = useDispatch();
 
   // Extract video data passed from state
   const videoData = location.state?.video;
@@ -39,7 +41,7 @@ const UpdateVideo = () => {
     e.preventDefault();
     
     if (!formData.title || !formData.videoUrl || !formData.thumbnailUrl) {
-      return setToast({ title: "Validation Error", message: "Missing required fields." });
+      return setToast({type:"error", title: "Validation Error", message: "Missing required fields." });
     }
 
     try {
@@ -49,18 +51,29 @@ const UpdateVideo = () => {
         getAuthHeader()
       );
 
+      try{
+        
+        const res = await axios.get(
+          `http://localhost:3000/api/auth/me?t=${Date.now()}`,
+          getAuthHeader()
+        );
+        dispatch(updateUser(res.data));
+        setToast({ title: "Updated", message: "Video updated successfully!" });
+        console.log(res.data)
+        setTimeout(() => navigate(-1), 1500);
+      }
       // Fetch updated user data to sync Redux state
-      const { data: updatedUser } = await axios.get(
-        'http://localhost:3000/api/auth/me',
-        getAuthHeader()
-      );
-      dispatch(updateUser(updatedUser));
+      catch(err){
+         setToast({ 
+          type:"error",
+        title: "Update Error", 
+        message: err.response?.data?.message || "Profile fetching eror." 
+      });
+      }
       
-      setToast({ title: "Updated", message: "Video updated successfully!" });
-      
-      setTimeout(() => navigate(-1), 1500);
     } catch (err) {
       setToast({ 
+        type:"error",
         title: "Update Error", 
         message: err.response?.data?.message || "Failed to update video." 
       });
@@ -69,7 +82,7 @@ const UpdateVideo = () => {
 
   return (
     <div className="bg-yt-bg min-h-screen p-3 sm:p-6 transition-colors duration-300">
-      {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
+      {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}

@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { ListFilter, Pencil, Check, X, Trash2 } from 'lucide-react';
 import axios from 'axios';
+import useFetch from '../hooks/useFetch';
 
 const CommentSection = ({ videoId, currentUser }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
+
+  const { data: fetchedComments } = useFetch(videoId ? `/api/comments/${videoId}` : null);
+
+  useEffect(() => {
+    if (fetchedComments) {
+      setComments(fetchedComments);
+    }
+  }, [fetchedComments]);
   
   // Debug logs
   console.log("currentUser:", currentUser);
@@ -16,18 +25,6 @@ const CommentSection = ({ videoId, currentUser }) => {
   const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
-
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3000/api/comments/${videoId}`);
-        setComments(res.data);
-      } catch (err) {
-        console.error("Failed to fetch comments", err);
-      }
-    };
-    fetchComments();
-  }, [videoId]);
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;

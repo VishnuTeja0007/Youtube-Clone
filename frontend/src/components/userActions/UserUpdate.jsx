@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserPen, Mail, AtSign, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
-import Toast from '../Toaster';
+import Toast from '../SuccessToast';
 
 const UpdateProfile = () => {
   const user = useSelector(state => state.auth.user);
@@ -40,6 +40,7 @@ const UpdateProfile = () => {
       setTimeout(() => navigate(-1), 1500);
     } catch (err) {
       setToast({ 
+        type:"error",
         title: "Update Error", 
         message: err.response?.data?.message || "Failed to update profile." 
       });
@@ -48,7 +49,7 @@ const UpdateProfile = () => {
 
   return (
     <div className="bg-yt-bg min-h-screen p-3 sm:p-6 md:p-8 transition-colors duration-300">
-      {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
+      {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-xl mx-auto">
         <button 

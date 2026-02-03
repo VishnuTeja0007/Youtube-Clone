@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
-import Toast from '../Toaster';
+import Toast from '../SuccessToast';
+import { Edit3, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 
 const UpdateChannel = () => {
   const location = useLocation();
@@ -52,12 +53,13 @@ const UpdateChannel = () => {
       );
       dispatch(updateUser(updatedUser));
       
-      setToast({ title: "Updated", message: "Channel details refreshed successfully!" });
+      setToast({type:"success", title: "Updated", message: "Channel details refreshed successfully!" });
       
       // Return to the channel profile after a brief delay to show success
       setTimeout(() => navigate(`/channel/${channelData._id}`), 1500);
     } catch (err) {
       setToast({ 
+        type:"error",
         title: "Update Error", 
         message: err.response?.data?.message || "Failed to save changes." 
       });
@@ -66,7 +68,7 @@ const UpdateChannel = () => {
 
   return (
     <div className="bg-yt-bg min-h-screen p-3 sm:p-6 md:p-8 transition-colors duration-300">
-      {toast && <Toast title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
+      {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-3xl mx-auto">
         {/* Navigation Header */}

@@ -9,6 +9,7 @@ import VideoPlayer from './VideoPlayer';
 import { updateUser } from '../store/authSlice';
 import CommentSection from './CommentSection';
 import Loading from './Loading';
+import useFetch from '../hooks/useFetch';
 
 const VideoPage = () => {
   const user = useSelector((state) => state.auth.user);
@@ -18,19 +19,26 @@ const VideoPage = () => {
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { data: fetchedVideo, loading: videoLoading } = useFetch(`/api/videos/${id}`);
+
+  useEffect(() => {
+    if (fetchedVideo) {
+      setVideo(fetchedVideo);
+      setLoading(false);
+    } else if (videoLoading) {
+      setLoading(true);
+    }
+  }, [fetchedVideo, videoLoading]);
+
   // Helper for Auth Headers
   const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
   });
 
   useEffect(() => {
-    async function fetchData() {
+    async function addToHistory() {
       try {
-        const response = await axios.get(`http://localhost:3000/api/videos/${id}`);
-        setVideo(response.data);
-        
-        // Add to watch history if user is logged in
-        if (user && response.data) {
+        if (user && fetchedVideo) {
           const historyRes = await axios.post(
             `http://localhost:3000/api/actions/watchhistory`, 
             { videoId: id }, 
@@ -39,13 +47,11 @@ const VideoPage = () => {
           if (historyRes.data.user) dispatch(updateUser(historyRes.data.user));
         }
       } catch (error) {
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
+        console.error("Watch history error:", error);
       }
     }
-    fetchData();
-  }, [id]);
+    addToHistory();
+  }, [id, user, fetchedVideo]);
 
   // Check user interaction status
   const isLiked = useMemo(() => user?.likedVideos?.some(v => v._id === video?._id), [user, video]);

@@ -87,11 +87,11 @@ console.log(user)
           <div className="space-y-0.5 animate-slide-in" style={{ animationDelay: '150ms' }}>
             {user && (
               <Link
-                to={`/channel/${user?.channel?._id}`}
+                to={user.channel ? (typeof user.channel === 'string' ? `/channel/${user.channel}` : `/channel/${user.channel._id}`) : '/studio/createChannel'}
                 className="flex items-center gap-5 px-3 py-2 rounded-lg cursor-pointer hover:bg-yt-surface text-yt-text"
               >
                 <UserCircle size={22} strokeWidth={2} />
-                <span className="text-[14px] font-medium">Your channel</span>
+                <span className="text-[14px] font-medium">{user.channel ? "Your channel" : "Create Channel"}</span>
               </Link>
             )}
 

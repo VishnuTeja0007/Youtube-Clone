@@ -1,5 +1,6 @@
 import Channel from "../models/channelModel.js";
 import Video from "../models/videoModel.js";
+import User from "../models/userModel.js";
 import bcrypt from "bcryptjs"
 
 
@@ -32,6 +33,14 @@ export const createChannel = async (req, res) => {
     });
 
     const savedChannel = await newChannel.save();
+    
+    // Update the user document with the channel reference
+    await User.findByIdAndUpdate(
+      userId,
+      { channel: savedChannel._id },
+      { new: true }
+    );
+    
     res.status(201).json(savedChannel);
   } catch (error) {
     res.status(500).json({ message: "Error creating channel", error: error.message });
@@ -109,6 +118,13 @@ export const deleteChannel = async (req, res) => {
 
     await Video.deleteMany({ channel: id });
     await Channel.findByIdAndDelete(id);
+    
+    // Remove the channel reference from the user
+    await User.findByIdAndUpdate(
+      userId,
+      { channel: null },
+      { new: true }
+    );
 
     res.status(200).json({ message: "Channel deleted successfully" });
   } catch (error) {

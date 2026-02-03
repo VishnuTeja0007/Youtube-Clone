@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { CheckCircle, Settings, Users } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Loading from './Loading';
+import useFetch from '../hooks/useFetch';
 
 const ChannelList = () => {
   const [channels, setChannels] = useState([]);
@@ -11,19 +11,16 @@ const ChannelList = () => {
   const user = useSelector(state => state.auth.user);
   const navigate = useNavigate();
 
+  const { data: fetchedChannels, loading: fetchLoading } = useFetch('/api/channels');
+
   useEffect(() => {
-    const fetchChannels = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/channels');
-        setChannels(response.data);
-      } catch (err) {
-        console.error("Error fetching channels:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchChannels();
-  }, []);
+    if (fetchedChannels) {
+      setChannels(fetchedChannels);
+      setLoading(false);
+    } else if (fetchLoading) {
+      setLoading(true);
+    }
+  }, [fetchedChannels, fetchLoading]);
 
   const handleChannelClick = (channelId) => {
     navigate(`/channel/${channelId}`);
@@ -57,7 +54,8 @@ const ChannelList = () => {
         {/* Channel Cards - Responsive Grid */}
         <div className="grid grid-cols-1 gap-3 sm:gap-4">
           {channels.map((channel) => {
-            const isOwner = user?.id === (channel.owner._id || channel.owner);
+            // Safely check if the current user is the owner, handling cases where the owner object might be null
+            const isOwner = user?.id === (channel.owner?._id || channel.owner);
             
             return (
               <div 
