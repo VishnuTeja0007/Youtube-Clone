@@ -18,6 +18,7 @@ const Register = () => {
 
     // 1. Setup useFetch (initially idle with null path)
     const [triggerPath, setTriggerPath] = useState(null);
+    
     const { data, loading, error } = useFetch(
         triggerPath,
         'POST',

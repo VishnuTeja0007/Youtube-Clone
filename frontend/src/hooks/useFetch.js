@@ -1,57 +1,41 @@
-import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-
-/**
- * Custom hook to fetch data from the backend.
- * Uses VITE_BACKEND_SERVER from environment variables as base URL.
- * 
- * @param {string} actionPath - The endpoint path (e.g., '/api/videos') or full URL
- * @param {string} method - HTTP method (GET, POST, PUT, DELETE)
- * @param {object} body - Request body
- * @param {object} headers - Request headers
- * @returns {object} - { data, loading, error, refetch }
- */
 const useFetch = (actionPath, method = 'GET', body = null, headers = {}) => {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
-    // Skip if no actionPath is provided (allows conditional fetching)
     if (!actionPath) return;
 
     setLoading(true);
     setError(null);
+    setData(null);
+
     try {
-      // Access environment variable directly or via import.meta.env (Vite standard)
       const baseURL = import.meta.env.VITE_BACKEND_SERVER;
-      
-      // Construct full URL if actionPath is relative
-      const cleanBaseURL = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
+      const cleanBaseURL = baseURL.replace(/\/$/, '');
       const cleanActionPath = actionPath.startsWith('/') ? actionPath : `/${actionPath}`;
-      
-      const url = actionPath.startsWith('http') 
-        ? actionPath 
+      const url = actionPath.startsWith('http')
+        ? actionPath
         : `${cleanBaseURL}${cleanActionPath}`;
 
-      console.log(`[useFetch] Requesting: ${url}`);
-
-      const config = {
+      const response = await axios({
         method,
         url,
-        headers,
         data: body,
-      };
+        headers,
+      });
 
-      const response = await axios(config);
       setData(response.data);
     } catch (err) {
-      console.error("useFetch error:", err);
-      setError(err);
+      setError(
+        err?.response?.data?.message ||
+        err.message ||
+        'Something went wrong'
+      );
     } finally {
       setLoading(false);
     }
-  }, [actionPath, method, JSON.stringify(body), JSON.stringify(headers)]);
+  }, [actionPath, method]);
 
   useEffect(() => {
     fetchData();
@@ -59,5 +43,3 @@ const useFetch = (actionPath, method = 'GET', body = null, headers = {}) => {
 
   return { data, loading, error, refetch: fetchData };
 };
-
-export default useFetch;
