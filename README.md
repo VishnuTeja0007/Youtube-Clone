@@ -367,3 +367,4 @@ FOR QUERIES CONTACT:
 phone: 6302272812
 email:vishnuteja98765@gmail.com
 github:https://github.com/VishnuTeja0007/Youtube-Clone
+live in vercel : https://youtube-clone-p1xb1hgsj-vishnuteja0007s-projects.vercel.app/
