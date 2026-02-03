@@ -1,4 +1,4 @@
-const useFetch = (actionPath, method = 'GET', body = null, headers = {}) => {
+ const useFetch = (actionPath, method = 'GET', body = null, headers = {}) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -43,3 +43,5 @@ const useFetch = (actionPath, method = 'GET', body = null, headers = {}) => {
 
   return { data, loading, error, refetch: fetchData };
 };
+
+export default useFetch
