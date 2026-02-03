@@ -99,6 +99,7 @@ cd frontend
 ```bash
 npm install
 ```
+and add server url in .env as VITE_BACKEND_SERVER=http://localhost:5000
 
 3. Start the development server:
 ```bash
@@ -360,3 +361,9 @@ Authorization: Bearer <token>
 - **Security Testing**: Vulnerability scanning and penetration testing for security assurance
 
 This comprehensive documentation provides developers with the necessary understanding to contribute to, deploy, and maintain the YouTube Clone application effectively.
+
+
+FOR QUERIES CONTACT:
+phone: 6302272812
+email:vishnuteja98765@gmail.com
+github:https://github.com/VishnuTeja0007/Youtube-Clone
