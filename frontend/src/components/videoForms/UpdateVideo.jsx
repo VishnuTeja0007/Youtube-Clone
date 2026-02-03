@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Edit3, ArrowLeft, Film } from 'lucide-react';
 import Toast from '../SuccessToast';
 import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
+import useFetch from '../hooks/useFetch'; // Assuming your hook path
+
 const UpdateVideo = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [toast, setToast] = useState(null);
   const dispatch = useDispatch();
+  const [toast, setToast] = useState(null);
 
   // Extract video data passed from state
   const videoData = location.state?.video;
@@ -29,55 +30,70 @@ const UpdateVideo = () => {
     }
   }, [videoData, navigate]);
 
-  const getAuthHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
+  // 1. Memoize headers for useFetch stability
+  const headers = useMemo(() => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }), []);
+
+  // 2. Hook for Video Update (PUT)
+  const [updateTrigger, setUpdateTrigger] = useState(null);
+  const { 
+    data: updateResponse, 
+    loading: updateLoading, 
+    error: updateError 
+  } = useFetch(updateTrigger, 'PUT', formData, headers);
+
+  // 3. Hook for Refreshing User Data (GET)
+  const [refreshTrigger, setRefreshTrigger] = useState(null);
+  const { 
+    data: refreshedUser, 
+    error: refreshError 
+  } = useFetch(refreshTrigger, 'GET', null, headers);
+
+  // 4. Step 1: Handle PUT Success
+  useEffect(() => {
+    if (updateResponse) {
+      // Trigger user data refresh to sync Redux
+      setRefreshTrigger(`/api/auth/me?t=${Date.now()}`);
+    }
+    if (updateError) {
+      setToast({ 
+        type: "error", 
+        title: "Update Error", 
+        message: updateError.response?.data?.message || "Failed to update video." 
+      });
+      setUpdateTrigger(null);
+    }
+  }, [updateResponse, updateError]);
+
+  // 5. Step 2: Handle Redux Sync and Navigation
+  useEffect(() => {
+    if (refreshedUser) {
+      dispatch(updateUser(refreshedUser));
+      setToast({ title: "Updated", message: "Video updated successfully!" });
+      setTimeout(() => navigate(-1), 1500);
+    }
+    if (refreshError) {
+      setToast({ 
+        type: "error",
+        title: "Sync Error", 
+        message: refreshError.response?.data?.message || "Profile fetching error." 
+      });
+    }
+  }, [refreshedUser, refreshError, dispatch, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     if (!formData.title || !formData.videoUrl || !formData.thumbnailUrl) {
-      return setToast({type:"error", title: "Validation Error", message: "Missing required fields." });
+      return setToast({ type: "error", title: "Validation Error", message: "Missing required fields." });
     }
 
-    try {
-      await axios.put(
-        `http://localhost:3000/api/videos/${videoData._id}`, 
-        formData, 
-        getAuthHeader()
-      );
-
-      try{
-        
-        const res = await axios.get(
-          `http://localhost:3000/api/auth/me?t=${Date.now()}`,
-          getAuthHeader()
-        );
-        dispatch(updateUser(res.data));
-        setToast({ title: "Updated", message: "Video updated successfully!" });
-        console.log(res.data)
-        setTimeout(() => navigate(-1), 1500);
-      }
-      // Fetch updated user data to sync Redux state
-      catch(err){
-         setToast({ 
-          type:"error",
-        title: "Update Error", 
-        message: err.response?.data?.message || "Profile fetching eror." 
-      });
-      }
-      
-    } catch (err) {
-      setToast({ 
-        type:"error",
-        title: "Update Error", 
-        message: err.response?.data?.message || "Failed to update video." 
-      });
-    }
+    setUpdateTrigger(`/api/videos/${videoData._id}`);
   };
 
   return (
@@ -85,7 +101,6 @@ const UpdateVideo = () => {
       {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
         <button 
           onClick={() => navigate(-1)} 
           className="flex items-center gap-2 text-yt-muted hover:text-yt-text mb-4 sm:mb-6 transition-colors font-bold text-xs uppercase tracking-wider"
@@ -101,7 +116,6 @@ const UpdateVideo = () => {
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
-            {/* Form Section */}
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div className="space-y-1 sm:space-y-2">
                 <label className="text-xs font-bold text-yt-muted uppercase ml-1">Title*</label>
@@ -160,17 +174,16 @@ const UpdateVideo = () => {
               
               <button 
                 type="submit" 
-                className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 rounded-lg sm:rounded-xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] shadow-lg text-sm sm:text-base"
+                disabled={updateLoading}
+                className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 rounded-lg sm:rounded-xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] shadow-lg text-sm sm:text-base disabled:opacity-50"
               >
-                Update Video
+                {updateLoading ? "Updating..." : "Update Video"}
               </button>
             </form>
 
-            {/* Preview Section */}
             <div className="space-y-3 sm:space-y-4">
               <p className="text-xs font-bold text-yt-muted uppercase">Preview</p>
               
-              {/* Video Preview */}
               <div className="aspect-video bg-black rounded-lg sm:rounded-2xl overflow-hidden border border-yt-border flex items-center justify-center">
                 {formData.videoUrl ? (
                   <video 
@@ -187,7 +200,6 @@ const UpdateVideo = () => {
                 )}
               </div>
               
-              {/* Card Preview */}
               <div className="p-3 sm:p-4 bg-yt-bg rounded-lg sm:rounded-xl border border-yt-border flex gap-3 sm:gap-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-yt-surface flex-shrink-0 overflow-hidden border border-yt-border flex items-center justify-center">
                   {formData.thumbnailUrl ? (
@@ -195,9 +207,6 @@ const UpdateVideo = () => {
                       src={formData.thumbnailUrl} 
                       className="w-full h-full object-cover" 
                       alt="preview"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
                     />
                   ) : (
                     <Film size={16} className="text-yt-muted" />

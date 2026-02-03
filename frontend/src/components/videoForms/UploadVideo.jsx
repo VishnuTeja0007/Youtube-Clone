@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Film, ArrowLeft } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
 import Toast from '../Toaster'; 
+import useFetch from '../hooks/useFetch'; // Import your custom hook
 
 const CreateVideo = () => {
   const navigate = useNavigate();
@@ -14,34 +14,69 @@ const CreateVideo = () => {
   });
   const [toast, setToast] = useState(null);
 
+  // 1. Memoize headers to prevent infinite re-renders in useFetch
+  const headers = useMemo(() => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }), []);
+
+  // 2. Hook for Video Creation (POST)
+  const [createTrigger, setCreateTrigger] = useState(null);
+  const { 
+    data: createResponse, 
+    loading: createLoading, 
+    error: createError 
+  } = useFetch(createTrigger, 'POST', formData, headers);
+
+  // 3. Hook for Syncing User Data (GET)
+  const [refreshTrigger, setRefreshTrigger] = useState(null);
+  const { 
+    data: refreshedUser, 
+    error: refreshError 
+  } = useFetch(refreshTrigger, 'GET', null, headers);
+
+  // 4. Handle Video Creation Response
+  useEffect(() => {
+    if (createResponse) {
+      // Step 1 Success: Trigger the profile refresh
+      setRefreshTrigger('/api/auth/me');
+    }
+    if (createError) {
+      setToast({ 
+        type: "error", 
+        title: "Error", 
+        message: createError.response?.data?.message || "Failed to upload." 
+      });
+      setCreateTrigger(null); // Reset trigger to allow retry
+    }
+  }, [createResponse, createError]);
+
+  // 5. Handle Profile Sync and Navigation
+  useEffect(() => {
+    if (refreshedUser) {
+      // Step 2 Success: Update Redux and redirect
+      dispatch(updateUser(refreshedUser));
+      setToast({ type: "success", title: "Success", message: "Video published! Redirecting..." });
+      setTimeout(() => navigate(-1), 1500);
+    }
+    if (refreshError) {
+      setToast({ 
+        type: "error", 
+        title: "Sync Error", 
+        message: "Video created but failed to sync user data." 
+      });
+    }
+  }, [refreshedUser, refreshError, dispatch, navigate]);
+
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const getAuthHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.title || !formData.videoUrl || !formData.thumbnailUrl) {
-      return setToast({ type:"error" ,title: "Validation Error", message: "Missing required fields." });
+      return setToast({ type: "error", title: "Validation Error", message: "Missing required fields." });
     }
 
-    try {
-      await axios.post('http://localhost:3000/api/videos', formData, getAuthHeader());
-
-      // Fetch updated user data to sync Redux state
-      const { data: updatedUser } = await axios.get(
-        'http://localhost:3000/api/auth/me',
-        getAuthHeader()
-      );
-      dispatch(updateUser(updatedUser));
-
-      setToast({ type:"error",title: "Success", message: "Video published! Redirecting..." });
-      
-      setTimeout(() => navigate(-1), 1500);
-    } catch (err) {
-      setToast({ type:"error",title: "Error", message: err.response?.data?.message || "Failed to upload." });
-    }
+    // Trigger the hook
+    setCreateTrigger('/api/videos');
   };
 
   return (
@@ -49,7 +84,6 @@ const CreateVideo = () => {
       {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
         <button 
           onClick={() => navigate(-1)} 
           className="flex items-center gap-2 text-yt-muted hover:text-yt-text mb-4 sm:mb-6 transition-colors font-bold text-xs uppercase tracking-wider"
@@ -65,7 +99,6 @@ const CreateVideo = () => {
           </h2>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
-            {/* Form Section */}
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div className="space-y-1 sm:space-y-2">
                 <label className="text-xs font-bold text-yt-muted uppercase ml-1">Title*</label>
@@ -124,34 +157,28 @@ const CreateVideo = () => {
               
               <button 
                 type="submit" 
-                className="w-full bg-yt-primary text-white font-bold sm:font-black py-3 sm:py-4 rounded-lg sm:rounded-xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-widest shadow-lg shadow-yt-primary/20 text-sm sm:text-base"
+                disabled={createLoading}
+                className="w-full bg-yt-primary text-white font-bold sm:font-black py-3 sm:py-4 rounded-lg sm:rounded-xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-widest shadow-lg shadow-yt-primary/20 text-sm sm:text-base disabled:opacity-50"
               >
-                Publish Video
+                {createLoading ? "Publishing..." : "Publish Video"}
               </button>
             </form>
 
-            {/* Preview Section */}
             <div className="space-y-3 sm:space-y-4">
               <p className="text-xs font-bold text-yt-muted uppercase">Preview</p>
               
-              {/* Video Preview */}
               <div className="aspect-video bg-black rounded-lg sm:rounded-2xl overflow-hidden border border-yt-border flex items-center justify-center">
                 {formData.videoUrl ? (
                   <video 
                     src={formData.videoUrl} 
-                    controls 
                     className="w-full h-full"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.parentElement.innerHTML = '<div class="flex items-center justify-center w-full h-full text-yt-muted text-xs">Invalid video URL</div>';
-                    }}
+                    controls
                   />
                 ) : (
                   <Film className="text-yt-muted" size={32} />
                 )}
               </div>
               
-              {/* Card Preview */}
               <div className="p-3 sm:p-4 bg-yt-bg rounded-lg sm:rounded-xl border border-yt-border flex gap-3 sm:gap-4">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-yt-surface flex-shrink-0 overflow-hidden border border-yt-border flex items-center justify-center">
                   {formData.thumbnailUrl ? (
@@ -159,9 +186,6 @@ const CreateVideo = () => {
                       src={formData.thumbnailUrl} 
                       className="w-full h-full object-cover" 
                       alt="preview"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
                     />
                   ) : (
                     <Film size={16} className="text-yt-muted" />

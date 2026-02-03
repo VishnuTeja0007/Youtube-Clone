@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserPen, Mail, AtSign, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
 import Toast from '../SuccessToast';
+import useFetch from '../hooks/useFetch'; // Assuming your hook path
 
 const UpdateProfile = () => {
   const user = useSelector(state => state.auth.user);
@@ -18,33 +18,48 @@ const UpdateProfile = () => {
     avatar: user?.avatar || ''
   });
 
+  // 1. Memoize headers for useFetch
+  const headers = useMemo(() => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }), []);
+
+  // 2. Setup useFetch for the PUT request
+  const [triggerPath, setTriggerPath] = useState(null);
+  const { data, loading, error } = useFetch(
+    triggerPath, 
+    'PUT', 
+    formData, 
+    headers
+  );
+
+  // 3. Handle response lifecycle
+  useEffect(() => {
+    if (data?.user) {
+      setToast({ type: "success", title: "Success", message: "Profile updated successfully!" });
+      
+      // Update global context so the header avatar changes immediately
+      dispatch(updateUser(data.user)); 
+
+      setTimeout(() => navigate(-1), 1500);
+    }
+
+    if (error) {
+      setToast({ 
+        type: "error",
+        title: "Update Error", 
+        message: error.response?.data?.message || "Failed to update profile." 
+      });
+      setTriggerPath(null); // Reset trigger so user can retry
+    }
+  }, [data, error, dispatch, navigate]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.put('http://localhost:3000/api/auth/update', formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        withCredentials: true
-      });
-
-      setToast({ title: "Success", message: "Profile updated successfully!" });
-      
-      // Update global context so the header avatar changes immediately
-      dispatch(updateUser(res.data.user)); 
-
-      setTimeout(() => navigate(-1), 1500);
-    } catch (err) {
-      setToast({ 
-        type:"error",
-        title: "Update Error", 
-        message: err.response?.data?.message || "Failed to update profile." 
-      });
-    }
+    setTriggerPath('/api/auth/update');
   };
 
   return (
@@ -61,7 +76,7 @@ const UpdateProfile = () => {
 
         <div className="bg-yt-surface border border-yt-border rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-10 shadow-2xl">
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-6 sm:mb-8 md:mb-10 flex items-center gap-2 sm:gap-3 text-yt-text">
-            <UserPen className="text-yt-primary" size={20} sm:size={24} /> 
+            <UserPen className="text-yt-primary" size={20} /> 
             <span className="hidden xs:inline">Personal Info</span>
             <span className="xs:hidden">Profile</span>
           </h2>
@@ -92,7 +107,6 @@ const UpdateProfile = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
-            {/* Username Input */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
                 <AtSign size={12} /> Display Name
@@ -106,7 +120,6 @@ const UpdateProfile = () => {
               />
             </div>
 
-            {/* Email Input */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
                 <Mail size={12} /> Email Address
@@ -121,7 +134,6 @@ const UpdateProfile = () => {
               />
             </div>
 
-            {/* Avatar URL Input */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
                 <ImageIcon size={12} /> Avatar Image URL
@@ -137,9 +149,10 @@ const UpdateProfile = () => {
 
             <button 
               type="submit" 
-              className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl md:rounded-2xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] mt-4 shadow-lg text-sm sm:text-base"
+              disabled={loading}
+              className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl md:rounded-2xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] mt-4 shadow-lg text-sm sm:text-base disabled:opacity-50"
             >
-              Save Profile
+              {loading ? "Saving..." : "Save Profile"}
             </button>
           </form>
         </div>

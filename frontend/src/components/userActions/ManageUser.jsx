@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   History, ThumbsUp, ThumbsDown, Clock, 
@@ -7,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearAuth, updateUser } from '../../store/authSlice';
+import useFetch from '../hooks/useFetch'; // Assuming your hook path
 
 const UserLibrary = () => {
   const user = useSelector(state => state.auth.user);
@@ -14,56 +14,73 @@ const UserLibrary = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('History');
 
-  const handleDeleteAccount = async () => {
+  // 1. Memoized Headers
+  const headers = useMemo(() => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }), []);
+
+  // 2. Hook for Account Deletion
+  const [deleteAccTrigger, setDeleteAccTrigger] = useState(null);
+  const { data: deleteAccData, error: deleteAccError } = useFetch(
+    deleteAccTrigger, 'DELETE', null, headers
+  );
+
+  // 3. Hook for Removing Items (History/Watch Later)
+  const [removeItemTrigger, setRemoveItemTrigger] = useState({ path: null, body: null });
+  const { data: removeItemData, error: removeItemError } = useFetch(
+    removeItemTrigger.path, 'DELETE', removeItemTrigger.body, headers
+  );
+
+  // 4. Effects for Account Deletion
+  useEffect(() => {
+    if (deleteAccData) {
+      dispatch(clearAuth());
+      navigate('/register');
+    }
+    if (deleteAccError) {
+      alert(deleteAccError.response?.data?.message || "Failed to delete account");
+      setDeleteAccTrigger(null);
+    }
+  }, [deleteAccData, deleteAccError, dispatch, navigate]);
+
+  // 5. Effects for Item Removal
+  useEffect(() => {
+    if (removeItemData?.user) {
+      dispatch(updateUser(removeItemData.user));
+      setRemoveItemTrigger({ path: null, body: null }); // Reset
+    }
+    if (removeItemError) {
+      alert(removeItemError.response?.data?.message || "Failed to remove item");
+      setRemoveItemTrigger({ path: null, body: null });
+    }
+  }, [removeItemData, removeItemError, dispatch]);
+
+  const handleDeleteAccount = () => {
     if (window.confirm("Are you sure you want to delete your account? This will permanently delete your channel and all videos.")) {
-      try {
-        await axios.delete('http://localhost:3000/api/auth/delete', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        dispatch(clearAuth());
-        navigate('/register');
-      } catch (err) {
-        console.error("Delete account error:", err);
-        alert(err.response?.data?.message || "Failed to delete account");
-      }
+      setDeleteAccTrigger('/api/auth/delete');
     }
   };
 
-  const handleRemoveItem = async (e, videoId) => {
-    e.preventDefault(); // Prevent navigation to video
+  const handleRemoveItem = (e, videoId) => {
+    e.preventDefault();
     e.stopPropagation();
 
     if (!window.confirm("Are you sure you want to remove this video from the list?")) return;
 
-    try {
-      let url = '';
-      if (activeTab === 'History') url = 'http://localhost:3000/api/actions/watchhistory';
-      if (activeTab === 'Watch Later') url = 'http://localhost:3000/api/actions/watchlater';
+    let path = '';
+    if (activeTab === 'History') path = '/api/actions/watchhistory';
+    if (activeTab === 'Watch Later') path = '/api/actions/watchlater';
 
-      const res = await axios.delete(url, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        data: { videoId } // Send videoId in body for DELETE request
-      });
-      if (res.data.user) {
-        dispatch(updateUser(res.data.user));
-      }
-    } catch (err) {
-      console.error("Error removing item:", err);
-      alert(err.response?.data?.message || "Failed to remove item");
-    }
+    setRemoveItemTrigger({ path, body: { videoId } });
   };
 
   if (!user) return <div className="bg-yt-bg min-h-screen text-yt-text p-10">Please log in.</div>;
 
-  // Tabs Configuration with Populated Data Mapping
   const tabs = [
     { 
       fieldName:"watchHistory",
       name: 'History', 
       icon: <History size={18} />, 
-      // Filter out null videos and map to a consistent structure
       data: (user.watchHistory || [])
         .filter(item => item.video !== null)
         .map(item => ({ ...item.video, watchedAt: item.watchedAt }))
@@ -74,7 +91,6 @@ const UserLibrary = () => {
     { fieldName:"watchLater",name: 'Watch Later', icon: <Clock size={18} />, data: user.watchLater || [] },
   ];
 
-  // Fix: Match by exact name instead of fieldName inclusion
   const currentTabObj = tabs.find(t => t.name === activeTab);
   const currentData = currentTabObj?.data || [];
 
@@ -82,7 +98,7 @@ const UserLibrary = () => {
     <div className="bg-yt-bg min-h-screen text-yt-text transition-colors duration-300 pb-20">
       <div className="max-w-7xl mx-auto px-4 xxs:px-8">
         
-        {/* 1. Profile Summary Header */}
+        {/* Profile Summary Header */}
         <div className="flex flex-col xs:flex-row items-center gap-6 py-10 border-b border-yt-border">
           <img 
             src={user.avatar} 
@@ -93,7 +109,6 @@ const UserLibrary = () => {
             <h1 className="text-3xl font-bold tracking-tight">{user.username}</h1>
             <p className="text-yt-muted text-sm mb-4">{user.email}</p>
             <div className="flex flex-wrap justify-center xs:justify-start gap-2">
-               
                <button onClick={() => navigate("/studio/updateProfile")} className="bg-yt-surface hover:bg-yt-border/50 border border-yt-border px-4 py-1.5 rounded-full text-xs font-bold transition-all">
                  Customize Profile
                </button>
@@ -107,7 +122,7 @@ const UserLibrary = () => {
           </div>
         </div>
 
-        {/* 2. Navigation Tabs */}
+        {/* Navigation Tabs */}
         <div className="flex gap-4 xxs:gap-8 mt-4 overflow-x-auto no-scrollbar border-b border-yt-border">
           {tabs.map((tab) => (
             <button
@@ -124,7 +139,7 @@ const UserLibrary = () => {
           ))}
         </div>
 
-        {/* 3. Video Grid Section */}
+        {/* Video Grid Section */}
         <div className="mt-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold flex items-center gap-2 uppercase tracking-tighter">
@@ -154,7 +169,6 @@ const UserLibrary = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-base truncate group-hover:text-yt-primary transition-colors">{channel.channelName}</h3>
                       <p className="text-xs text-yt-muted">{channel.subscribers?.toLocaleString() || 0} subscribers</p>
-                      {channel.description && <p className="text-xs text-yt-muted line-clamp-1 mt-1">{channel.description}</p>}
                     </div>
                     <ChevronRight className="text-yt-muted group-hover:text-yt-primary transition-colors" size={20} />
                   </Link>
@@ -164,62 +178,36 @@ const UserLibrary = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
               {currentData.map((video) => (
                 <Link to={`/watch/${video._id}`} key={video._id} className="flex flex-col gap-2 group relative">
-                  {/* Thumbnail with Hover Zoom */}
                   <div className="relative aspect-video bg-yt-surface rounded-xl overflow-hidden border border-yt-border">
                     <img 
                       src={video.thumbnailUrl} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                       alt={video.title} 
                     />
-                    {video.watchedAt && (
-                       <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] text-white px-2 py-0.5 rounded font-bold uppercase">
-                         Watched {new Date(video.watchedAt).toLocaleDateString()}
-                       </div>
-                    )}
-                    
-                    {/* Delete Button for History and Watch Later */}
                     {(activeTab === 'History' || activeTab === 'Watch Later') && (
                       <button 
                         onClick={(e) => handleRemoveItem(e, video._id)}
                         className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
-                        title="Remove from list"
                       >
                         <Trash2 size={14} />
                       </button>
                     )}
                   </div>
-
-                  {/* Video Meta */}
                   <div className="pr-4">
                     <h3 className="font-bold text-sm line-clamp-2 leading-snug group-hover:text-yt-primary transition-colors">
                       {video.title}
                     </h3>
-                    <div className="text-yt-muted text-xs mt-1 flex items-center gap-1">
-                      <span>{video?.views?.toString()} views</span>
-                      <span>•</span>
-                      <span>{video.category}</span>
-                    </div>
                   </div>
                 </Link>
               ))}
             </div>
             )
           ) : (
-            /* 4. Empty State UI */
             <div className="flex flex-col items-center justify-center py-24 bg-yt-surface/30 rounded-3xl border border-dashed border-yt-border">
               <div className="w-20 h-20 bg-yt-surface rounded-full flex items-center justify-center text-yt-muted mb-6">
                  <PlaySquare size={32} />
               </div>
               <h3 className="text-lg font-bold">Nothing in {activeTab} yet</h3>
-              <p className="text-yt-muted text-sm mt-1 max-w-xs text-center">
-                Your activity and saved videos will appear here once you start watching.
-              </p>
-              <button 
-                onClick={() => navigate('/')}
-                className="mt-8 flex items-center gap-2 bg-yt-text text-yt-bg px-10 py-3 rounded-full font-black uppercase text-xs tracking-[0.2em] hover:opacity-90 transition-all shadow-lg"
-              >
-                <Home size={16} /> Explore Feed
-              </button>
             </div>
           )}
         </div>

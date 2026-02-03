@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, KeyRound } from 'lucide-react';
 import Toast from '../SuccessToast';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
+import useFetch from '../hooks/useFetch'; // Assuming your hook path
 
 const CreateChannel = () => {
-  const user = useSelector(state => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [toast, setToast] = useState(null);
@@ -16,49 +15,81 @@ const CreateChannel = () => {
     channelName: '', description: '', channelBanner: '', uniqueDeleteKey: ''
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const getAuthHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
+  // 1. Prepare Memoized Headers
+  const headers = useMemo(() => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }), []);
 
-  // Send a POST request to create the new channel with the provided form data
+  // 2. Setup Hook for Channel Creation
+  const [createTrigger, setCreateTrigger] = useState(null);
+  const { 
+    data: createData, 
+    loading: createLoading, 
+    error: createError 
+  } = useFetch(createTrigger, 'POST', formData, headers);
 
-    try {
-      const res = await axios.post('http://localhost:3000/api/channels', formData,getAuthHeader(), { withCredentials: true });
-      
-      // Fetch updated user data to sync Redux state with complete channel information
-      const { data: updatedUser } = await axios.get(
-        'http://localhost:3000/api/auth/me',
-        getAuthHeader()
-      );
-      console.log(updateUser)
-      dispatch(updateUser(updatedUser));
-      
-      setToast({type:"success", title: "Success", message: "Channel created! Redirecting..." });
-      setTimeout(() => navigate(`/channel/${updatedUser.channel._id}`), 1500);
-    } catch (err) {
-      setToast({ type: "error", title: "Error", message: err.response?.data?.message || "Creation failed" });
+  // 3. Setup Hook for Refreshing User Data
+  const [refreshTrigger, setRefreshTrigger] = useState(null);
+  const { 
+    data: updatedUserData, 
+    error: refreshError 
+  } = useFetch(refreshTrigger, 'GET', null, headers);
+
+  // 4. Step 1 Listener: After Channel is Created
+  useEffect(() => {
+    if (createData) {
+      // Trigger the second fetch to get the updated user profile
+      setRefreshTrigger('/api/auth/me');
     }
+    if (createError) {
+      setToast({ type: "error", title: "Error", message: createError.response?.data?.message || "Creation failed" });
+      setCreateTrigger(null);
+    }
+  }, [createData, createError]);
+
+  // 5. Step 2 Listener: After User Data is Refreshed
+  useEffect(() => {
+    if (updatedUserData) {
+      dispatch(updateUser(updatedUserData));
+      setToast({ type: "success", title: "Success", message: "Channel created! Redirecting..." });
+      
+      // Redirect using the new channel ID from the refreshed user data
+      setTimeout(() => navigate(`/channel/${updatedUserData.channel._id}`), 1500);
+    }
+    if (refreshError) {
+      setToast({ type: "error", title: "Sync Error", message: "Channel created but failed to sync user data." });
+    }
+  }, [updatedUserData, refreshError, dispatch, navigate]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.channelName || !formData.uniqueDeleteKey) {
+      setToast({ type: "error", title: "Missing Info", message: "Please fill in required fields." });
+      return;
+    }
+    setCreateTrigger('/api/channels');
   };
 
   return (
-
     <div className="bg-yt-bg min-h-screen p-4 xxs:p-8">
-      {/* Show feedback to the user via toast notifications */}
       {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
+      
       <div className="max-w-2xl mx-auto space-y-8">
-        <h2 className="text-2xl font-bold text-yt-text flex items-center gap-2"><Layout className="text-yt-primary"/> Start Your Journey</h2>
+        <h2 className="text-2xl font-bold text-yt-text flex items-center gap-2">
+          <Layout className="text-yt-primary"/> Start Your Journey
+        </h2>
         
         {/* Banner Preview */}
         <div className="w-full h-32 xxs:h-48 bg-yt-surface rounded-2xl overflow-hidden border border-yt-border">
           {formData.channelBanner ? (
             <img src={formData.channelBanner} className="w-full h-full object-cover" alt="Banner Preview" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-yt-muted text-xs uppercase font-bold">Banner Preview</div>
+            <div className="w-full h-full flex items-center justify-center text-yt-muted text-xs uppercase font-bold">
+              Banner Preview
+            </div>
           )}
         </div>
-          {/* Form for entering channel details and security key */}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input 
             placeholder="Channel Name*" 
@@ -88,12 +119,17 @@ const CreateChannel = () => {
             />
           </div>
 
-          <button type="submit" className="w-full bg-yt-text text-yt-bg font-bold py-4 rounded-xl hover:opacity-90 transition-all uppercase tracking-widest">
-            Launch Channel
+          <button 
+            type="submit" 
+            disabled={createLoading}
+            className="w-full bg-yt-text text-yt-bg font-bold py-4 rounded-xl hover:opacity-90 transition-all uppercase tracking-widest disabled:opacity-50"
+          >
+            {createLoading ? "Creating..." : "Launch Channel"}
           </button>
         </form>
       </div>
     </div>
   );
 };
-export default CreateChannel
+
+export default CreateChannel;

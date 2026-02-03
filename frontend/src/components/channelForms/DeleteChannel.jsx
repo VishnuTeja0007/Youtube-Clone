@@ -1,43 +1,53 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
+import useFetch from '../hooks/useFetch'; // Assuming your hook path
 
- const SecureDeleteChannel = ({ channelId, onClose }) => {
+const SecureDeleteChannel = ({ channelId, onClose }) => {
   const [key, setKey] = useState('');
-  const [loading, setLoading] = useState(false);
-  // Retrieve the current user's information from the global state
   const user = useSelector(state => state.auth.user);
-  // Hook to dispatch actions to the Redux store
   const dispatch = useDispatch();
 
+  // 1. Prepare Memoized Headers and Body
+  const headers = useMemo(() => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }), []);
 
+  // We wrap the key in an object because your controller expects { uniqueDeleteKey: ... }
+  const requestBody = useMemo(() => ({
+    uniqueDeleteKey: key
+  }), [key]);
 
-  const handleDelete = async () => {
-    setLoading(true);
-    // Execute the delete request with the security key for verification
-    try {
-      await axios.delete(`http://localhost:3000/api/channels/${channelId}`,
-      
-      {
-        headers:{
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        data: {
-        uniqueDeleteKey: key  // Sending key in body as per your controller
-      }
-      },
-       );
-      // Update local user context to remove channel reference before redirecting
+  // 2. Setup useFetch for DELETE
+  const [triggerPath, setTriggerPath] = useState(null);
+  const { data, loading, error } = useFetch(
+    triggerPath, 
+    'DELETE', 
+    requestBody, 
+    headers
+  );
+
+  // 3. Handle response lifecycle
+  useEffect(() => {
+    if (data) {
+      // Update local Redux state
       if (user) {
-        dispatch(updateUser({ channel: null }));
+        dispatch(updateUser({ ...user, channel: null }));
       }
-      window.location.href = '/'; // Redirect to home after total deletion
-    } catch (err) {
-      alert(err.response?.data?.message || "Invalid Key");
-      setLoading(false);
+      // Hard redirect to home to clear all states
+      window.location.href = '/';
     }
+
+    if (error) {
+      alert(error.response?.data?.message || "Invalid Key");
+      setTriggerPath(null); // Reset trigger so user can try again
+    }
+  }, [data, error, dispatch, user]);
+
+  const handleDeleteClick = () => {
+    if (!key) return;
+    setTriggerPath(`/api/channels/${channelId}`);
   };
 
   return (
@@ -47,13 +57,18 @@ import { updateUser } from '../../store/authSlice';
           <div className="p-3 bg-red-500/10 rounded-full text-red-500">
             <AlertTriangle size={32} />
           </div>
-          <button onClick={onClose} className="text-yt-muted hover:text-yt-text"><X /></button>
+          <button 
+            onClick={onClose} 
+            className="text-yt-muted hover:text-yt-text transition-colors"
+          >
+            <X />
+          </button>
         </div>
 
         <div className="space-y-2">
           <h3 className="text-xl font-bold text-yt-text uppercase tracking-tight">Extreme Action</h3>
           <p className="text-yt-muted text-sm">
-            Deleting your channel will remove **all videos** and **subscribers** permanently.
+            Deleting your channel will remove <span className="text-red-400 font-bold">all videos</span> and <span className="text-red-400 font-bold">subscribers</span> permanently.
           </p>
         </div>
 
@@ -63,15 +78,15 @@ import { updateUser } from '../../store/authSlice';
             type="password"
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            className="w-full bg-yt-surface border border-yt-border p-3 rounded-xl text-yt-text outline-none focus:border-yt-primary"
+            className="w-full bg-yt-surface border border-yt-border p-3 rounded-xl text-yt-text outline-none focus:border-yt-primary transition-all"
             placeholder="••••••••"
           />
         </div>
 
         <button 
-          onClick={handleDelete}
+          onClick={handleDeleteClick}
           disabled={!key || loading}
-          className="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
+          className="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? "Verifying..." : "Confirm Permanent Deletion"}
         </button>
@@ -79,4 +94,5 @@ import { updateUser } from '../../store/authSlice';
     </div>
   );
 };
-export default SecureDeleteChannel
+
+export default SecureDeleteChannel;

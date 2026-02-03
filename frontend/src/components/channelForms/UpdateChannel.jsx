@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { updateUser } from '../../store/authSlice';
 import Toast from '../SuccessToast';
 import { Edit3, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import useFetch from '../hooks/useFetch'; // Assuming your hook path
 
 const UpdateChannel = () => {
   const location = useLocation();
@@ -12,7 +12,6 @@ const UpdateChannel = () => {
   const dispatch = useDispatch();
   const [toast, setToast] = useState(null);
 
-  // Extract channel data passed from the ChannelProfile state
   const channelData = location.state?.channel;
 
   const [formData, setFormData] = useState({
@@ -23,47 +22,63 @@ const UpdateChannel = () => {
 
   // Security: Redirect if accessed without channel data
   useEffect(() => {
-    if (!channelData) {
-      navigate(-1);
-    }
+    if (!channelData) navigate(-1);
   }, [channelData, navigate]);
 
-  const getAuthHeader = () => ({
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  });
+  // 1. Memoize headers for useFetch stability
+  const headers = useMemo(() => ({
+    Authorization: `Bearer ${localStorage.getItem('token')}`
+  }), []);
+
+  // 2. Setup Hook for Channel Update (PUT)
+  const [updateTrigger, setUpdateTrigger] = useState(null);
+  const { 
+    data: updateResponse, 
+    loading: updateLoading, 
+    error: updateError 
+  } = useFetch(updateTrigger, 'PUT', formData, headers);
+
+  // 3. Setup Hook for Refreshing User Data (GET)
+  const [refreshTrigger, setRefreshTrigger] = useState(null);
+  const { 
+    data: refreshedUser, 
+    error: refreshError 
+  } = useFetch(refreshTrigger, 'GET', null, headers);
+
+  // 4. Step 1 Listener: After PUT succeeds
+  useEffect(() => {
+    if (updateResponse) {
+      setRefreshTrigger('/api/auth/me');
+    }
+    if (updateError) {
+      setToast({ 
+        type: "error", 
+        title: "Update Error", 
+        message: updateError.response?.data?.message || "Failed to save changes." 
+      });
+      setUpdateTrigger(null); // Reset trigger
+    }
+  }, [updateResponse, updateError]);
+
+  // 5. Step 2 Listener: After GET profile succeeds
+  useEffect(() => {
+    if (refreshedUser) {
+      dispatch(updateUser(refreshedUser));
+      setToast({ type: "success", title: "Updated", message: "Channel details refreshed successfully!" });
+      setTimeout(() => navigate(`/channel/${channelData._id}`), 1500);
+    }
+    if (refreshError) {
+      setToast({ type: "error", title: "Sync Error", message: "Update saved but failed to sync profile." });
+    }
+  }, [refreshedUser, refreshError, dispatch, navigate, channelData?._id]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    try {
-      await axios.put(
-        `http://localhost:3000/api/channels/${channelData._id}`, 
-        formData, 
-        getAuthHeader()
-      );
-
-      // Fetch updated user data to sync Redux state
-      const { data: updatedUser } = await axios.get(
-        'http://localhost:3000/api/auth/me',
-        getAuthHeader()
-      );
-      dispatch(updateUser(updatedUser));
-      
-      setToast({type:"success", title: "Updated", message: "Channel details refreshed successfully!" });
-      
-      // Return to the channel profile after a brief delay to show success
-      setTimeout(() => navigate(`/channel/${channelData._id}`), 1500);
-    } catch (err) {
-      setToast({ 
-        type:"error",
-        title: "Update Error", 
-        message: err.response?.data?.message || "Failed to save changes." 
-      });
-    }
+    setUpdateTrigger(`/api/channels/${channelData._id}`);
   };
 
   return (
@@ -71,7 +86,6 @@ const UpdateChannel = () => {
       {toast && <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />}
       
       <div className="max-w-3xl mx-auto">
-        {/* Navigation Header */}
         <button 
           onClick={() => navigate(-1)} 
           className="flex items-center gap-2 text-yt-muted hover:text-yt-text mb-4 sm:mb-6 transition-colors font-bold text-xs uppercase tracking-wider"
@@ -87,8 +101,6 @@ const UpdateChannel = () => {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 md:space-y-8">
-            
-            {/* 1. Banner Preview & Input */}
             <div className="space-y-2 sm:space-y-3">
               <label className="text-xs font-bold text-yt-muted uppercase ml-1 flex items-center gap-2">
                 <ImageIcon size={12} /> Channel Banner
@@ -115,7 +127,6 @@ const UpdateChannel = () => {
               />
             </div>
 
-            {/* 2. Channel Name */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-yt-muted uppercase ml-1">Channel Name</label>
               <input 
@@ -126,7 +137,6 @@ const UpdateChannel = () => {
               />
             </div>
 
-            {/* 3. Description */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-yt-muted uppercase ml-1">Description</label>
               <textarea 
@@ -138,12 +148,12 @@ const UpdateChannel = () => {
               />
             </div>
 
-            {/* Action Button */}
             <button 
               type="submit" 
-              className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] shadow-lg text-sm sm:text-base"
+              disabled={updateLoading}
+              className="w-full bg-yt-text text-yt-bg font-bold sm:font-black py-3 sm:py-4 md:py-5 rounded-lg sm:rounded-xl hover:opacity-90 active:scale-[0.98] transition-all uppercase tracking-wide sm:tracking-[0.15em] shadow-lg text-sm sm:text-base disabled:opacity-50"
             >
-              Update Channel
+              {updateLoading ? "Saving Changes..." : "Update Channel"}
             </button>
           </form>
         </div>

@@ -27,9 +27,14 @@ const useFetch = (actionPath, method = 'GET', body = null, headers = {}) => {
       const baseURL = import.meta.env.VITE_BACKEND_SERVER;
       
       // Construct full URL if actionPath is relative
+      const cleanBaseURL = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL;
+      const cleanActionPath = actionPath.startsWith('/') ? actionPath : `/${actionPath}`;
+      
       const url = actionPath.startsWith('http') 
         ? actionPath 
-        : `${baseURL}${actionPath}`;
+        : `${cleanBaseURL}${cleanActionPath}`;
+
+      console.log(`[useFetch] Requesting: ${url}`);
 
       const config = {
         method,
